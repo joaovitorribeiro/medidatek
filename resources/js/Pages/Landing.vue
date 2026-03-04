@@ -181,8 +181,8 @@ function submit() {
                 </div>
                 
                 <h1 class="animate-on-scroll delay-200 mt-8 max-w-4xl text-5xl font-medium tracking-tight sm:text-7xl lg:text-8xl leading-[0.9]">
-                    Software que <br />
-                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/50">muda o jogo.</span>
+                    Sistemas que <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/50">mudam o jogo.</span>
                 </h1>
 
                 <p class="animate-on-scroll delay-300 mt-8 max-w-xl text-lg text-white/60 leading-relaxed font-light">
