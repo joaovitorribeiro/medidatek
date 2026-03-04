@@ -16,6 +16,7 @@ class LeadController extends Controller
             'whatsapp' => ['nullable', 'string', 'max:40'],
             'company' => ['nullable', 'string', 'max:190'],
             'pain' => ['nullable', 'string', 'max:80'],
+            'investment_range' => ['required', 'string', 'max:80'],
             'message' => ['nullable', 'string', 'max:5000'],
             'utm_source' => ['nullable', 'string', 'max:120'],
             'utm_medium' => ['nullable', 'string', 'max:120'],

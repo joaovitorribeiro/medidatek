@@ -12,6 +12,7 @@ class Lead extends Model
         'whatsapp',
         'company',
         'pain',
+        'investment_range',
         'message',
         'utm_source',
         'utm_medium',
