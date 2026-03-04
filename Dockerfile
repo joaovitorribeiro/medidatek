@@ -15,18 +15,16 @@ COPY vite.config.js tsconfig.json postcss.config.js tailwind.config.js ./
 COPY --from=composer-build /app/vendor/tightenco/ziggy ./vendor/tightenco/ziggy
 RUN npx vite build
 
-FROM php:8.3-fpm-bookworm AS app
-WORKDIR /var/www/html
+FROM php:8.3-apache-bookworm AS app
+WORKDIR /app
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     libicu-dev \
-    libsqlite3-dev \
     libzip-dev \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    pkg-config \
     unzip \
   && docker-php-ext-configure gd --with-freetype --with-jpeg \
   && docker-php-ext-install -j"$(nproc)" \
@@ -34,20 +32,25 @@ RUN apt-get update \
     exif \
     gd \
     intl \
-    pcntl \
+    opcache \
     pdo \
     pdo_mysql \
-    pdo_sqlite \
     zip \
+  && a2enmod rewrite headers expires \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=composer-build /app /var/www/html
-COPY --from=node-build /app/public/build /var/www/html/public/build
+COPY --from=composer-build /app /app
+COPY --from=node-build /app/public/build /app/public/build
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 
 RUN chmod +x /usr/local/bin/entrypoint \
-  && mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
-  && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+  && mkdir -p /app/storage /app/bootstrap/cache \
+  && chown -R www-data:www-data /app/storage /app/bootstrap/cache
+
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+EXPOSE 80
 
 ENTRYPOINT ["entrypoint"]
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]

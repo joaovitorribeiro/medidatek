@@ -7,6 +7,36 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## MedidaTek
+
+### Deploy em produção (Coolify)
+
+Este projeto já está preparado para subir no Coolify **sem Nginx** (o container já serve HTTP com Apache).  
+Arquivos principais:
+
+- Dockerfile: build multi-stage (Composer + Vite) + runtime PHP + Apache
+- docker-compose.coolify.yml: web + queue usando variáveis de ambiente do Coolify
+
+Variáveis mínimas (defina no Coolify):
+
+- APP_ENV=production
+- APP_DEBUG=false
+- APP_KEY=base64:...
+- DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD (MySQL)
+
+Flags úteis:
+
+- RUN_MIGRATIONS=1 (para rodar migrations no start do web; depois volte para 0)
+- RUN_OPTIMIZE=1 (default) para cache de config/routes/views/events
+
+### Subir local (Docker)
+
+```bash
+docker compose up -d --build
+```
+
+Obs.: em ambiente local o APP_KEY é gerado automaticamente no start se não for informado.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

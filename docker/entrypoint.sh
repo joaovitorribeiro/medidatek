@@ -1,82 +1,68 @@
 #!/usr/bin/env sh
 set -e
 
-cd /var/www/html
+cd /app
 
 mkdir -p \
-  /var/www/html/storage/framework/cache/data \
-  /var/www/html/storage/framework/sessions \
-  /var/www/html/storage/framework/views \
-  /var/www/html/storage/framework/testing \
-  /var/www/html/storage/logs \
-  /var/www/html/bootstrap/cache
+  /app/storage/framework/cache/data \
+  /app/storage/framework/sessions \
+  /app/storage/framework/views \
+  /app/storage/framework/testing \
+  /app/storage/logs \
+  /app/bootstrap/cache
 
-SHARED_ENV="/var/www/html/storage/.env"
+chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-DESIRED_DB_CONNECTION="${DB_CONNECTION:-mysql}"
+APP_URL_EFFECTIVE="${APP_URL:-${COOLIFY_URL:-http://localhost}}"
+APP_NAME_EFFECTIVE="${APP_NAME:-MedidaTek}"
+APP_ENV_EFFECTIVE="${APP_ENV:-production}"
+APP_DEBUG_EFFECTIVE="${APP_DEBUG:-false}"
+APP_KEY_EFFECTIVE="${APP_KEY:-}"
 
-if [ -f "$SHARED_ENV" ] && [ ! -f .env ]; then
-  EXISTING_DB_CONNECTION="$(grep -E '^DB_CONNECTION=' "$SHARED_ENV" 2>/dev/null | head -n 1 | cut -d= -f2-)"
-  if [ -n "$EXISTING_DB_CONNECTION" ] && [ "$EXISTING_DB_CONNECTION" != "$DESIRED_DB_CONNECTION" ]; then
-    rm -f "$SHARED_ENV"
-  else
-    cp "$SHARED_ENV" .env
+if [ -z "$APP_KEY_EFFECTIVE" ]; then
+  if [ "$APP_ENV_EFFECTIVE" = "production" ]; then
+    echo "APP_KEY is required (set it in Coolify env vars)." >&2
+    exit 1
   fi
+  APP_KEY_EFFECTIVE="$(php -r 'echo "base64:".base64_encode(random_bytes(32));')"
 fi
 
-if [ ! -f .env ]; then
-  cat > .env <<EOF
-APP_NAME=${APP_NAME:-Laravel}
-APP_ENV=${APP_ENV:-local}
-APP_KEY=
-APP_DEBUG=${APP_DEBUG:-true}
-APP_URL=${APP_URL:-http://localhost}
+cat > /app/.env <<EOF
+APP_NAME=${APP_NAME_EFFECTIVE}
+APP_ENV=${APP_ENV_EFFECTIVE}
+APP_KEY=${APP_KEY_EFFECTIVE}
+APP_DEBUG=${APP_DEBUG_EFFECTIVE}
+APP_URL=${APP_URL_EFFECTIVE}
+
+LOG_CHANNEL=${LOG_CHANNEL:-stack}
+LOG_LEVEL=${LOG_LEVEL:-warning}
 
 DB_CONNECTION=${DB_CONNECTION:-mysql}
 DB_HOST=${DB_HOST:-mysql}
 DB_PORT=${DB_PORT:-3306}
-DB_DATABASE=${DB_DATABASE:-medidatek}
-DB_USERNAME=${DB_USERNAME:-medidatek}
-DB_PASSWORD=${DB_PASSWORD:-medidatek}
+DB_DATABASE=${DB_DATABASE:-${MYSQL_DATABASE:-medidatek}}
+DB_USERNAME=${DB_USERNAME:-${MYSQL_USER:-medidatek}}
+DB_PASSWORD=${DB_PASSWORD:-${MYSQL_PASSWORD:-medidatek}}
 
 SESSION_DRIVER=${SESSION_DRIVER:-file}
+SESSION_LIFETIME=${SESSION_LIFETIME:-120}
+SESSION_ENCRYPT=${SESSION_ENCRYPT:-false}
+
 CACHE_STORE=${CACHE_STORE:-database}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
 
-VITE_APP_NAME=${VITE_APP_NAME:-${APP_NAME:-Laravel}}
+VITE_APP_NAME=${VITE_APP_NAME:-${APP_NAME_EFFECTIVE}}
 EOF
-fi
 
-if [ ! -f "$SHARED_ENV" ]; then
-  cp .env "$SHARED_ENV"
-fi
-
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-if [ -z "${APP_KEY:-}" ]; then
-  if ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then
-    php artisan key:generate --no-interaction
-    cp .env "$SHARED_ENV"
-  fi
-fi
-
-DB_PATH="${DB_DATABASE:-/var/www/html/storage/database.sqlite}"
-if [ "${DB_CONNECTION:-mysql}" = "sqlite" ]; then
-  mkdir -p "$(dirname "$DB_PATH")"
-  if [ ! -f "$DB_PATH" ]; then
-    touch "$DB_PATH"
-  fi
-fi
-
-if [ "${DB_CONNECTION:-mysql}" = "mysql" ]; then
+if [ "${WAIT_FOR_DB:-1}" = "1" ] && [ "${DB_CONNECTION:-mysql}" = "mysql" ]; then
   php -r '
     $host = getenv("DB_HOST") ?: "mysql";
     $port = getenv("DB_PORT") ?: "3306";
-    $db   = getenv("DB_DATABASE") ?: "medidatek";
-    $user = getenv("DB_USERNAME") ?: "medidatek";
-    $pass = getenv("DB_PASSWORD") ?: "medidatek";
+    $db   = getenv("DB_DATABASE") ?: (getenv("MYSQL_DATABASE") ?: "medidatek");
+    $user = getenv("DB_USERNAME") ?: (getenv("MYSQL_USER") ?: "medidatek");
+    $pass = getenv("DB_PASSWORD") ?: (getenv("MYSQL_PASSWORD") ?: "medidatek");
     $dsn  = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
-    $tries = 60;
+    $tries = 90;
     while ($tries-- > 0) {
       try {
         new PDO($dsn, $user, $pass, [PDO::ATTR_TIMEOUT => 2]);
@@ -90,8 +76,16 @@ if [ "${DB_CONNECTION:-mysql}" = "mysql" ]; then
   ';
 fi
 
-if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
-  php artisan migrate --force --no-interaction || true
+if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
+  php artisan migrate --force --no-interaction
+fi
+
+if [ -n "${ADMIN_EMAIL:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ]; then
+  php artisan app:ensure-admin || true
+fi
+
+if [ "${RUN_OPTIMIZE:-1}" = "1" ]; then
+  php artisan optimize
 fi
 
 exec "$@"
