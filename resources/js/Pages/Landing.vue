@@ -219,67 +219,95 @@ function submit() {
 
             <!-- Bento Grid de Benefícios -->
             <section id="metodo" class="py-32 px-4 max-w-7xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
-                    <!-- Card 1 -->
-                    <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-3xl bg-zinc-900/50 p-8 ring-1 ring-white/10 hover:ring-white/20 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 h-full flex flex-col justify-between">
+                <div class="mb-12">
+                    <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Engenharia de Impacto</h2>
+                    <p class="mt-4 text-white/60 max-w-2xl text-lg">Não é só código. É método, design e estratégia para escalar sem quebrar.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
+                    <!-- Card 1: Arquitetura (Large) -->
+                    <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
+                        <div class="absolute inset-0 z-0">
+                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop" alt="Code" class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+                        </div>
+                        <div class="relative z-10 h-full flex flex-col justify-end p-8">
+                            <div class="inline-flex items-center gap-2 mb-3">
+                                <span class="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold uppercase tracking-wider">Core</span>
+                            </div>
+                            <h3 class="text-3xl font-medium text-white mb-2">Arquitetura Escalável</h3>
+                            <p class="text-white/70 text-lg leading-relaxed max-w-md">Esqueça adaptações forçadas. Construímos exatamente o que seu processo exige, pronto para milhões de requisições desde o dia 1.</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Velocidade -->
+                    <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
+                        <div class="absolute inset-0 z-0">
+                            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop" alt="Speed" class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700 mix-blend-luminosity" />
+                            <div class="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"></div>
+                        </div>
+                        <div class="relative z-10 h-full flex flex-col justify-center p-8">
+                            <h3 class="text-2xl font-medium text-white mb-1">Velocidade Real</h3>
+                            <p class="text-sm text-white/60 mb-6">Load time sub-100ms. Interfaces instantâneas.</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-5xl font-mono font-bold text-emerald-400 tracking-tighter">99</span>
+                                <span class="text-lg text-emerald-500/50 font-mono">/100 Google PSI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: IA -->
+                    <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
+                        <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
+                        <div class="absolute inset-0 z-0">
+                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" alt="AI" class="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" />
+                        </div>
+                        <div class="relative z-10 h-full flex flex-col justify-between p-8">
+                            <div class="self-end">
+                                <svg class="w-10 h-10 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
+                            </div>
                             <div>
-                                <h3 class="text-2xl font-medium text-white">Engenharia Sob Medida</h3>
-                                <p class="mt-2 text-white/60 max-w-md">Esqueça adaptações forçadas. Construímos exatamente o que seu processo exige, com arquitetura escalável desde o dia 1.</p>
-                            </div>
-                            <div class="flex gap-2 mt-4">
-                                <div class="h-2 w-2 rounded-full bg-indigo-500"></div>
-                                <div class="h-2 w-2 rounded-full bg-zinc-700"></div>
-                                <div class="h-2 w-2 rounded-full bg-zinc-700"></div>
-                            </div>
-                        </div>
-                        <!-- Decorative Abstract UI -->
-                        <div class="absolute right-0 bottom-0 w-1/2 h-2/3 bg-zinc-950 rounded-tl-3xl border-t border-l border-white/10 p-4 opacity-80 group-hover:translate-y-2 transition-transform duration-500">
-                            <div class="space-y-3">
-                                <div class="h-2 w-2/3 bg-zinc-800 rounded-full"></div>
-                                <div class="h-2 w-1/2 bg-zinc-800 rounded-full"></div>
-                                <div class="h-8 w-full bg-indigo-500/10 rounded-lg border border-indigo-500/20"></div>
+                                <h3 class="text-xl font-medium text-white">IA Nativa</h3>
+                                <p class="mt-2 text-sm text-white/70">Automação de triagem e insights preditivos.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card 2 -->
-                    <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-3xl bg-zinc-900/50 p-8 ring-1 ring-white/10 hover:ring-white/20 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10">
-                            <h3 class="text-xl font-medium text-white">Velocidade Real</h3>
-                            <p class="mt-2 text-sm text-white/60">Load time sub-100ms. Interfaces que reagem instantaneamente.</p>
+                    <!-- Card 4: Design System -->
+                    <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
+                        <div class="absolute inset-0 z-0">
+                             <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop" alt="Design" class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700 grayscale" />
                         </div>
-                        <div class="absolute inset-x-0 bottom-0 h-32 flex items-end justify-center pb-8">
-                             <div class="text-4xl font-mono font-bold text-emerald-400 tracking-tighter">99<span class="text-lg text-emerald-500/50">/100</span></div>
-                        </div>
-                    </div>
-
-                    <!-- Card 3 -->
-                    <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-3xl bg-zinc-900/50 p-8 ring-1 ring-white/10 hover:ring-white/20 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10">
-                            <h3 class="text-xl font-medium text-white">IA Integrada</h3>
-                            <p class="mt-2 text-sm text-white/60">Não é hype. É automação de triagem, análise de dados e suporte.</p>
-                        </div>
-                        <div class="absolute right-4 bottom-4">
-                            <svg class="w-12 h-12 text-cyan-500/20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
-                        </div>
-                    </div>
-
-                    <!-- Card 4 -->
-                    <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-3xl bg-zinc-900/50 p-8 ring-1 ring-white/10 hover:ring-white/20 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="grid md:grid-cols-2 gap-8 h-full items-center">
+                        <div class="relative z-10 h-full flex flex-col justify-between p-8">
+                            <div class="grid grid-cols-2 gap-2 opacity-80">
+                                <div class="h-8 rounded bg-white/10 border border-white/5"></div>
+                                <div class="h-8 rounded bg-indigo-500/80 border border-white/5"></div>
+                                <div class="h-16 col-span-2 rounded bg-white/5 border border-white/5"></div>
+                            </div>
                             <div>
-                                <h3 class="text-2xl font-medium text-white">Design System Puro</h3>
-                                <p class="mt-2 text-white/60">Componentes consistentes, acessibilidade WCAG AA e beleza funcional. Seu time vai amar usar.</p>
+                                <h3 class="text-xl font-medium text-white">Design System</h3>
+                                <p class="mt-2 text-sm text-white/70">Consistência visual e UX de elite.</p>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <div class="h-10 rounded-lg bg-zinc-800 border border-white/5"></div>
-                                <div class="h-10 rounded-lg bg-indigo-600 border border-white/5"></div>
-                                <div class="h-24 col-span-2 rounded-lg bg-zinc-950 border border-white/10"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5: Mobile First (New) -->
+                    <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
+                        <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=1000&auto=format&fit=crop" class="absolute right-0 top-0 h-full w-2/3 object-cover opacity-50 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" alt="Mobile" />
+                        
+                        <div class="relative z-20 h-full flex flex-col justify-center p-8">
+                            <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
+                            <p class="mt-2 text-white/60 max-w-xs">Não é "adaptado". É desenhado para o toque, com gestos nativos e performance de app.</p>
+                            <div class="mt-6 flex gap-3">
+                                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-medium text-white/80">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                    iOS & Android
+                                </div>
+                                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-medium text-white/80">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>
+                                    PWA Ready
+                                </div>
                             </div>
                         </div>
                     </div>
