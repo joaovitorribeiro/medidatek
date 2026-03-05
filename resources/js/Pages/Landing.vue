@@ -2,6 +2,7 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import AiChatWidget from '@/Components/Marketing/AiChatWidget.vue';
+import FuturisticBackground from '@/Components/Marketing/FuturisticBackground.vue';
 
 type ProofLink = {
     name: string;
@@ -220,6 +221,10 @@ function submit() {
     <div class="landing-universe min-h-screen bg-[#030305] text-white selection:bg-indigo-500/30 selection:text-indigo-200">
         <!-- Aurora Background -->
         <div class="aurora-bg fixed inset-0 z-0 pointer-events-none">
+            <FuturisticBackground />
+            <div class="future-grid"></div>
+            <div class="future-dots"></div>
+            <div class="future-scan"></div>
             <div class="aurora-orb orb-1"></div>
             <div class="aurora-orb orb-2"></div>
             <div class="aurora-orb orb-3"></div>
@@ -326,11 +331,12 @@ function submit() {
                                 </div>
                                 <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3h2a2 2 0 012 2v2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2H7a2 2 0 01-2-2v-6a2 2 0 012-2h2V5a2 2 0 012-2z"/></svg>
                             </div>
-                            <div class="mt-5 text-xl font-semibold text-white">Mapeamos o que trava a escala</div>
-                            <div class="mt-2 text-sm text-white/60">Mapeamos processo, dados e riscos para acertar a arquitetura.</div>
+                            <div class="mt-5 text-xl font-semibold text-white">Identificação de gargalos</div>
+                            <div class="mt-2 text-sm text-white/60">Mapeamos processos, dados e riscos que limitam a escala. Entregamos um diagnóstico claro para orientar decisões de arquitetura e priorização de melhorias.</div>
                             <div class="mt-5 flex flex-wrap gap-2">
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Processo</span>
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Risco</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Arquitetura</span>
                             </div>
                         </div>
                     </div>
@@ -347,10 +353,11 @@ function submit() {
                                 <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L8 18l-4 1 1-4 11.5-11.5z"/></svg>
                             </div>
                             <div class="mt-5 text-xl font-semibold text-white">Fluxos que convertem</div>
-                            <div class="mt-2 text-sm text-white/60">Fluxos e interface com foco em conversão e velocidade operacional.</div>
+                            <div class="mt-2 text-sm text-white/60">Projetamos interfaces e fluxos com foco em conversão e eficiência operacional. Cada decisão é validada com dados e testes de usabilidade para maximizar resultados.</div>
                             <div class="mt-5 flex flex-wrap gap-2">
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">UX</span>
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Conversão</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Eficiência</span>
                             </div>
                         </div>
                     </div>
@@ -367,10 +374,11 @@ function submit() {
                                 <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.7 6.3l3 3M4 20l4-1 10.3-10.3a2.121 2.121 0 00-3-3L5 15l-1 5z"/></svg>
                             </div>
                             <div class="mt-5 text-xl font-semibold text-white">Entrega incremental</div>
-                            <div class="mt-2 text-sm text-white/60">Entrega incremental, testes onde importa e performance como requisito.</div>
+                            <div class="mt-2 text-sm text-white/60">Desenvolvemos de forma incremental, priorizando testes críticos e performance como requisito. Cada entrega é validada antes de avançar para a próxima fase, garantindo qualidade consistente.</div>
                             <div class="mt-5 flex flex-wrap gap-2">
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Performance</span>
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Qualidade</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Testes</span>
                             </div>
                         </div>
                     </div>
@@ -386,11 +394,13 @@ function submit() {
                                 </div>
                                 <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 14l3-3 4 4 6-6"/></svg>
                             </div>
-                            <div class="mt-5 text-xl font-semibold text-white">Melhoria contínua</div>
-                            <div class="mt-2 text-sm text-white/60">Métricas, melhorias contínuas e novas automações com IA.</div>
+                            <div class="mt-5 text-xl font-semibold text-white">Otimização contínua</div>
+                            <div class="mt-2 text-sm text-white/60">Monitoramos métricas estratégicas, analisamos dados e aplicamos melhorias incrementais. Automação e IA são usadas quando o impacto é comprovado, sempre com validação e testes.</div>
                             <div class="mt-5 flex flex-wrap gap-2">
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Métricas</span>
                                 <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">IA</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Performance</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Impacto</span>
                             </div>
                         </div>
                     </div>
@@ -800,6 +810,60 @@ function submit() {
     background: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #000000 100%);
 }
 
+.future-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 96px 96px;
+    background-position: 0 0;
+    opacity: 0.18;
+    transform: translateZ(0);
+    mask-image: radial-gradient(circle at 50% 20%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.6) 48%, rgba(0, 0, 0, 0) 78%);
+    animation: grid-drift 26s linear infinite;
+}
+
+.future-grid::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, rgba(99, 102, 241, 0.18), rgba(34, 211, 238, 0.14), rgba(16, 185, 129, 0.10)),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.45) 60%, rgba(0, 0, 0, 0.85) 100%);
+    mix-blend-mode: screen;
+    opacity: 0.55;
+}
+
+.future-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.14) 1px, transparent 1.6px);
+    background-size: 22px 22px;
+    opacity: 0.10;
+    transform: translateZ(0);
+    mask-image: radial-gradient(circle at 50% 15%, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 80%);
+    animation: dots-drift 40s linear infinite;
+}
+
+.future-scan {
+    position: absolute;
+    inset: -10% 0;
+    background-image:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.02) 0px,
+            rgba(255, 255, 255, 0.02) 1px,
+            rgba(0, 0, 0, 0) 5px,
+            rgba(0, 0, 0, 0) 9px
+        ),
+        radial-gradient(800px 320px at 50% 0%, rgba(34, 211, 238, 0.12) 0%, rgba(34, 211, 238, 0.0) 70%);
+    opacity: 0.28;
+    mix-blend-mode: overlay;
+    transform: translateZ(0);
+    animation: scan-sweep 12s ease-in-out infinite;
+}
+
 .aurora-orb {
     position: absolute;
     border-radius: 50%;
@@ -996,6 +1060,29 @@ function submit() {
     0%, 100% { transform: translate(0, 0); }
     33% { transform: translate(30px, -50px); }
     66% { transform: translate(-20px, 20px); }
+}
+
+@keyframes grid-drift {
+    0% { background-position: 0 0; }
+    100% { background-position: 192px 192px; }
+}
+
+@keyframes dots-drift {
+    0% { background-position: 0 0; }
+    100% { background-position: -220px 160px; }
+}
+
+@keyframes scan-sweep {
+    0%, 100% { transform: translateY(-2%); opacity: 0.18; }
+    50% { transform: translateY(2%); opacity: 0.32; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .future-grid,
+    .future-dots,
+    .future-scan {
+        animation: none;
+    }
 }
 
 /* Animations Utils */

@@ -22,7 +22,7 @@ type SavedChat = {
     lastCta: ChatCta | null;
 };
 
-const CHAT_STORAGE_KEY = 'ai_chat_saved_v1';
+const CHAT_STORAGE_KEY = 'ai_chat_saved_v3';
 const CHAT_TTL_MS = 1000 * 60 * 60 * 24;
 const CHAT_MAX_MESSAGES = 40;
 
@@ -31,9 +31,7 @@ const isSending = ref(false);
 const input = ref('');
 const activeSection = ref<string | null>(null);
 const teaser = ref<{ visible: boolean; text: string }>({ visible: false, text: '' });
-const hasAutoOpened = ref(false);
 const lastCta = ref<ChatCta | null>(null);
-const hasWelcomeShown = ref(false);
 const hasUserInteracted = ref(false);
 const messages = ref<ChatMessage[]>([
     {
@@ -97,7 +95,6 @@ function loadChat() {
                 .map((m: any) => ({ role: m.role as ChatRole, content: m.content as string }));
             if (restored.length > 0) {
                 messages.value = restored;
-                hasWelcomeShown.value = true;
             }
         }
 
@@ -130,12 +127,6 @@ function scrollToMessageStart(index: number) {
 }
 
 function openChat(options?: { reason?: string; message?: string; auto?: boolean }) {
-    if (options?.auto && hasAutoOpened.value) return;
-    if (options?.auto) {
-        hasAutoOpened.value = true;
-        sessionStorage.setItem('ai_chat_auto_opened', '1');
-    }
-
     teaser.value.visible = false;
     isOpen.value = true;
 
@@ -224,16 +215,10 @@ async function send() {
 }
 
 let io: IntersectionObserver | null = null;
-let scrollHandler: (() => void) | null = null;
-let autoTimer: number | null = null;
-let welcomeOpenTimer: number | null = null;
-let welcomeCloseTimer: number | null = null;
 let openHandler: ((e: Event) => void) | null = null;
 let nudgeHandler: ((e: Event) => void) | null = null;
 
 onMounted(() => {
-    hasAutoOpened.value = sessionStorage.getItem('ai_chat_auto_opened') === '1';
-    hasWelcomeShown.value = false;
     loadChat();
 
     openHandler = (e: Event) => {
@@ -263,40 +248,6 @@ onMounted(() => {
         );
         sections.forEach((s) => io?.observe(s));
     }
-
-    scrollHandler = () => {
-        const y = window.scrollY;
-        const h = document.documentElement.scrollHeight - window.innerHeight;
-        const ratio = h > 0 ? y / h : 0;
-        if (ratio >= 0.28 && !hasAutoOpened.value && !hasWelcomeShown.value) {
-            if (autoTimer) return;
-            autoTimer = window.setTimeout(() => {
-                openChat({
-                    auto: true,
-                    message: 'Tem alguma dúvida? Me diga o objetivo e as integrações que você precisa — eu te sugiro o melhor caminho (MVP vs V1) e uma faixa de investimento.',
-                });
-            }, 18000);
-        }
-    };
-
-    window.addEventListener('scroll', scrollHandler, { passive: true });
-    scrollHandler();
-
-    welcomeOpenTimer = window.setTimeout(() => {
-        if (hasWelcomeShown.value) return;
-        if (hasUserInteracted.value) return;
-        if (isOpen.value) return;
-
-        hasWelcomeShown.value = true;
-
-        openChat({ auto: false });
-
-        welcomeCloseTimer = window.setTimeout(() => {
-            if (hasUserInteracted.value) return;
-            if (!isOpen.value) return;
-            isOpen.value = false;
-        }, 15000);
-    }, 10000);
 });
 
 watch(
@@ -311,23 +262,6 @@ watch(lastCta, () => {
     saveChat();
 });
 
-watch(activeSection, (id) => {
-    if (!id) return;
-    if (hasAutoOpened.value) return;
-
-    if (id === 'contato') {
-        openChat({
-            auto: true,
-            message: 'Antes de enviar: se você me disser objetivo + integrações + urgência, eu te ajudo a fechar o escopo ideal e evitar retrabalho.',
-        });
-        return;
-    }
-
-    if (id === 'projetos') {
-        nudge('Quer um orçamento rápido? Me diga objetivo + integrações + faixa de investimento.');
-    }
-});
-
 watch(isOpen, (open) => {
     if (open) {
         teaser.value.visible = false;
@@ -336,12 +270,8 @@ watch(isOpen, (open) => {
 
 onBeforeUnmount(() => {
     if (io) io.disconnect();
-    if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
     if (openHandler) window.removeEventListener('ai-chat-open', openHandler as EventListener);
     if (nudgeHandler) window.removeEventListener('ai-chat-nudge', nudgeHandler as EventListener);
-    if (autoTimer) window.clearTimeout(autoTimer);
-    if (welcomeOpenTimer) window.clearTimeout(welcomeOpenTimer);
-    if (welcomeCloseTimer) window.clearTimeout(welcomeCloseTimer);
 });
 </script>
 
