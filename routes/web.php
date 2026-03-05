@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AiDashboardController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\LandingBentoCardController;
 use App\Http\Controllers\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\Admin\ProjectController;
@@ -16,6 +17,45 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+
+Route::get('/sitemap.xml', function () {
+    $lastmod = now()->toDateString();
+    $urls = [
+        [
+            'loc' => route('landing'),
+            'lastmod' => $lastmod,
+            'changefreq' => 'weekly',
+            'priority' => '1.0',
+        ],
+        [
+            'loc' => route('legal.privacy'),
+            'lastmod' => $lastmod,
+            'changefreq' => 'yearly',
+            'priority' => '0.2',
+        ],
+        [
+            'loc' => route('legal.terms'),
+            'lastmod' => $lastmod,
+            'changefreq' => 'yearly',
+            'priority' => '0.2',
+        ],
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
+    foreach ($urls as $u) {
+        $loc = htmlspecialchars($u['loc'], ENT_XML1);
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>{$loc}</loc>\n";
+        $xml .= "    <lastmod>{$u['lastmod']}</lastmod>\n";
+        $xml .= "    <changefreq>{$u['changefreq']}</changefreq>\n";
+        $xml .= "    <priority>{$u['priority']}</priority>\n";
+        $xml .= "  </url>\n";
+    }
+    $xml .= '</urlset>'."\n";
+
+    return response($xml, 200)->header('Content-Type', 'application/xml; charset=UTF-8');
+})->name('sitemap');
 
 Route::get('/', function () {
     $bentoImages = collect([
@@ -200,7 +240,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy']);
 });
 
-Route::middleware(['auth', 'verified', 'admin'])
+Route::middleware(['auth', 'verified', 'admin_or_staff'])
     ->prefix('admin')
     ->group(function () {
         Route::get('/', function () {
@@ -208,20 +248,25 @@ Route::middleware(['auth', 'verified', 'admin'])
         })->name('admin.home');
 
         Route::get('/projetos', [ProjectController::class, 'index'])->name('admin.projects.index');
-        Route::get('/projetos/novo', [ProjectController::class, 'create'])->name('admin.projects.create');
-        Route::post('/projetos', [ProjectController::class, 'store'])->name('admin.projects.store');
-        Route::get('/projetos/{project}/editar', [ProjectController::class, 'edit'])->name('admin.projects.edit');
-        Route::put('/projetos/{project}', [ProjectController::class, 'update'])->name('admin.projects.update');
-        Route::delete('/projetos/{project}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
+        Route::get('/projetos/novo', [ProjectController::class, 'create'])->middleware('admin')->name('admin.projects.create');
+        Route::post('/projetos', [ProjectController::class, 'store'])->middleware('admin')->name('admin.projects.store');
+        Route::get('/projetos/{project}/editar', [ProjectController::class, 'edit'])->middleware('admin')->name('admin.projects.edit');
+        Route::put('/projetos/{project}', [ProjectController::class, 'update'])->middleware('admin')->name('admin.projects.update');
+        Route::delete('/projetos/{project}', [ProjectController::class, 'destroy'])->middleware('admin')->name('admin.projects.destroy');
         Route::get('/leads', [AdminLeadController::class, 'index'])->name('admin.leads.index');
         Route::get('/ia', [AiDashboardController::class, 'index'])->name('admin.ai');
         Route::get('/site/imagens', [LandingBentoCardController::class, 'edit'])->name('admin.landing.bento.edit');
-        Route::put('/site/imagens', [LandingBentoCardController::class, 'update'])->name('admin.landing.bento.update');
-        Route::post('/site/imagens/{card}', [LandingBentoCardController::class, 'save'])->name('admin.landing.bento.card.save');
+        Route::put('/site/imagens', [LandingBentoCardController::class, 'update'])->middleware('admin')->name('admin.landing.bento.update');
+        Route::post('/site/imagens/{card}', [LandingBentoCardController::class, 'save'])->middleware('admin')->name('admin.landing.bento.card.save');
+
+        Route::get('/equipe', [TeamController::class, 'index'])->middleware('admin')->name('admin.team.index');
+        Route::post('/equipe', [TeamController::class, 'store'])->middleware('admin')->name('admin.team.store');
+        Route::put('/equipe/{user}/senha', [TeamController::class, 'updatePassword'])->middleware('admin')->name('admin.team.password.update');
+        Route::patch('/equipe/{user}/admin', [TeamController::class, 'updateAdmin'])->middleware('admin')->name('admin.team.admin.update');
 
         Route::get('/landing/imagens', [LandingBentoCardController::class, 'edit']);
-        Route::put('/landing/imagens', [LandingBentoCardController::class, 'update']);
-        Route::post('/landing/imagens/{card}', [LandingBentoCardController::class, 'save']);
+        Route::put('/landing/imagens', [LandingBentoCardController::class, 'update'])->middleware('admin');
+        Route::post('/landing/imagens/{card}', [LandingBentoCardController::class, 'save'])->middleware('admin');
     });
 
 require __DIR__.'/auth.php';

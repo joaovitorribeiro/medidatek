@@ -29,7 +29,9 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Redefinir senha" />
+        <Head title="Redefinir senha">
+            <meta name="robots" content="noindex,nofollow" />
+        </Head>
 
         <form @submit.prevent="submit">
             <div>

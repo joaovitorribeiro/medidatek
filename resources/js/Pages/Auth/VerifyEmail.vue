@@ -21,7 +21,9 @@ const verificationLinkSent = computed(
 
 <template>
     <GuestLayout>
-        <Head title="Verificação de email" />
+        <Head title="Verificação de email">
+            <meta name="robots" content="noindex,nofollow" />
+        </Head>
 
         <div class="mb-4 text-sm text-white/60">
             Obrigado por se cadastrar! Antes de começar, verifique seu email clicando no link que acabamos de enviar.

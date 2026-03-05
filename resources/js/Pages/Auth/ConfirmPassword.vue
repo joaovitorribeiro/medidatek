@@ -21,7 +21,9 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Confirmar senha" />
+        <Head title="Confirmar senha">
+            <meta name="robots" content="noindex,nofollow" />
+        </Head>
 
         <div class="mb-4 text-sm text-white/60">
             Esta é uma área segura do sistema. Confirme sua senha para continuar.

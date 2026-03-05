@@ -32,6 +32,31 @@ const calcCloseRate = ref(8);
 const calcTicket = ref(3500);
 const calcHours = ref(120);
 const calcHourlyCost = ref(65);
+const siteOrigin = computed(() => (typeof window !== 'undefined' ? window.location.origin : ''));
+const canonicalUrl = computed(() => (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : ''));
+const ogImageUrl = computed(() => (siteOrigin.value ? `${siteOrigin.value}/og/medidatek.svg` : '/og/medidatek.svg'));
+const jsonLd = computed(() =>
+    JSON.stringify(
+        {
+            '@context': 'https://schema.org',
+            '@graph': [
+                {
+                    '@type': 'Organization',
+                    name: 'MedidaTek',
+                    url: siteOrigin.value || undefined,
+                    logo: ogImageUrl.value,
+                },
+                {
+                    '@type': 'WebSite',
+                    name: 'MedidaTek',
+                    url: siteOrigin.value || undefined,
+                },
+            ],
+        },
+        null,
+        0,
+    ),
+);
 const integrationList = [
     'Site institucional', 'Landing page', 'E-commerce / Loja virtual', 'Marketplace',
     'Portal do cliente', 'Área de membros', 'SaaS sob medida', 'App iOS/Android (PWA)',
@@ -149,11 +174,18 @@ function nextStep() {
 function prevStep() {
     if (step.value > 1) step.value = (step.value - 1) as any;
 }
+function startNewLead() {
+    sentOnce.value = false;
+    clientErrors.value = {};
+    form.reset();
+    step.value = 1;
+}
 function submit() {
     form.post(route('leads.store'), {
         preserveScroll: true,
         onSuccess: () => {
             sentOnce.value = true;
+            clientErrors.value = {};
             form.reset();
             step.value = 1;
         },
@@ -162,8 +194,27 @@ function submit() {
 </script>
 
 <template>
-    <Head title="MedidaTek — O futuro do seu software">
+    <Head title="Software sob medida com IA e performance">
         <meta name="description" content="Engenharia de software sob medida, design de alta performance e IA aplicada." />
+        <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+
+        <link rel="canonical" :href="canonicalUrl" />
+        <link rel="alternate" hreflang="pt-BR" :href="canonicalUrl" />
+
+        <meta property="og:site_name" content="MedidaTek" />
+        <meta property="og:title" content="Software sob medida com IA e performance - MedidaTek" />
+        <meta property="og:description" content="Engenharia de software sob medida, design de alta performance e IA aplicada." />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:url" :content="canonicalUrl" />
+        <meta property="og:image" :content="ogImageUrl" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Software sob medida com IA e performance - MedidaTek" />
+        <meta name="twitter:description" content="Engenharia de software sob medida, design de alta performance e IA aplicada." />
+        <meta name="twitter:image" :content="ogImageUrl" />
+
+        <script type="application/ld+json">{{ jsonLd }}</script>
     </Head>
 
     <div class="landing-universe min-h-screen bg-[#030305] text-white selection:bg-indigo-500/30 selection:text-indigo-200">
@@ -259,33 +310,89 @@ function submit() {
 
             <section id="metodo" class="py-32 px-4 max-w-7xl mx-auto">
                 <div class="mb-12">
-                    <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-indigo-200">
-                        Engenharia de Impacto
-                    </div>
                     <h2 class="mt-6 text-4xl md:text-5xl font-medium tracking-tight">Método</h2>
                     <p class="mt-4 text-white/60 max-w-2xl text-lg">Execução com processo. Clareza de escopo. Entrega com padrão de engenharia.</p>
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-4 mb-10">
-                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-                        <div class="text-xs font-semibold tracking-wider text-white/50">01</div>
-                        <div class="mt-2 text-lg font-semibold text-white">Diagnóstico</div>
-                        <div class="mt-2 text-sm text-white/60">Mapeamos processo, dados e riscos para acertar a arquitetura.</div>
+                <div class="grid gap-4 md:grid-cols-4">
+                    <div class="animate-on-scroll method-step-card method-step-1 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
+                        <div class="method-step-bg absolute inset-0"></div>
+                        <div class="method-step-noise absolute inset-0"></div>
+                        <div class="relative">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
+                                    <span class="opacity-80">01</span>
+                                    <span class="text-white/60">Diagnóstico</span>
+                                </div>
+                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3h2a2 2 0 012 2v2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2H7a2 2 0 01-2-2v-6a2 2 0 012-2h2V5a2 2 0 012-2z"/></svg>
+                            </div>
+                            <div class="mt-5 text-xl font-semibold text-white">Mapeamos o que trava a escala</div>
+                            <div class="mt-2 text-sm text-white/60">Mapeamos processo, dados e riscos para acertar a arquitetura.</div>
+                            <div class="mt-5 flex flex-wrap gap-2">
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Processo</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Risco</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-                        <div class="text-xs font-semibold tracking-wider text-white/50">02</div>
-                        <div class="mt-2 text-lg font-semibold text-white">Design & UX</div>
-                        <div class="mt-2 text-sm text-white/60">Fluxos e interface com foco em conversão e velocidade operacional.</div>
+
+                    <div class="animate-on-scroll method-step-card method-step-2 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
+                        <div class="method-step-bg absolute inset-0"></div>
+                        <div class="method-step-noise absolute inset-0"></div>
+                        <div class="relative">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
+                                    <span class="opacity-80">02</span>
+                                    <span class="text-white/60">Design & UX</span>
+                                </div>
+                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L8 18l-4 1 1-4 11.5-11.5z"/></svg>
+                            </div>
+                            <div class="mt-5 text-xl font-semibold text-white">Fluxos que convertem</div>
+                            <div class="mt-2 text-sm text-white/60">Fluxos e interface com foco em conversão e velocidade operacional.</div>
+                            <div class="mt-5 flex flex-wrap gap-2">
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">UX</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Conversão</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-                        <div class="text-xs font-semibold tracking-wider text-white/50">03</div>
-                        <div class="mt-2 text-lg font-semibold text-white">Build</div>
-                        <div class="mt-2 text-sm text-white/60">Entrega incremental, testes onde importa e performance como requisito.</div>
+
+                    <div class="animate-on-scroll method-step-card method-step-3 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
+                        <div class="method-step-bg absolute inset-0"></div>
+                        <div class="method-step-noise absolute inset-0"></div>
+                        <div class="relative">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
+                                    <span class="opacity-80">03</span>
+                                    <span class="text-white/60">Build</span>
+                                </div>
+                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.7 6.3l3 3M4 20l4-1 10.3-10.3a2.121 2.121 0 00-3-3L5 15l-1 5z"/></svg>
+                            </div>
+                            <div class="mt-5 text-xl font-semibold text-white">Entrega incremental</div>
+                            <div class="mt-2 text-sm text-white/60">Entrega incremental, testes onde importa e performance como requisito.</div>
+                            <div class="mt-5 flex flex-wrap gap-2">
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Performance</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Qualidade</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-                        <div class="text-xs font-semibold tracking-wider text-white/50">04</div>
-                        <div class="mt-2 text-lg font-semibold text-white">Evolução</div>
-                        <div class="mt-2 text-sm text-white/60">Métricas, melhorias contínuas e novas automações com IA.</div>
+
+                    <div class="animate-on-scroll method-step-card method-step-4 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
+                        <div class="method-step-bg absolute inset-0"></div>
+                        <div class="method-step-noise absolute inset-0"></div>
+                        <div class="relative">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
+                                    <span class="opacity-80">04</span>
+                                    <span class="text-white/60">Evolução</span>
+                                </div>
+                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 14l3-3 4 4 6-6"/></svg>
+                            </div>
+                            <div class="mt-5 text-xl font-semibold text-white">Melhoria contínua</div>
+                            <div class="mt-2 text-sm text-white/60">Métricas, melhorias contínuas e novas automações com IA.</div>
+                            <div class="mt-5 flex flex-wrap gap-2">
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Métricas</span>
+                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">IA</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -556,7 +663,33 @@ function submit() {
                         <p class="mt-2 text-white/60">Conte sobre o projeto. Sem compromisso, apenas engenharia.</p>
                     </div>
 
-                    <form @submit.prevent="submit" class="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+                    <div
+                        v-if="sentOnce"
+                        class="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl"
+                    >
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5"></path>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-lg font-semibold text-white">Formulário concluído.</div>
+                                <div class="mt-1 text-sm text-white/70">Vamos entrar em contato com você o mais rápido possível.</div>
+                                <div class="mt-6">
+                                    <button
+                                        type="button"
+                                        class="rounded-full bg-white px-6 py-2 text-sm font-semibold text-black hover:bg-zinc-200 transition-colors"
+                                        @click="startNewLead"
+                                    >
+                                        Enviar outro projeto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form v-else @submit.prevent="submit" class="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
                         <div class="mb-8 flex justify-between items-center border-b border-white/5 pb-4">
                             <span class="text-xs font-medium text-white/40 uppercase tracking-widest">Passo {{ step }}/4</span>
                             <div class="flex gap-1">
@@ -636,6 +769,9 @@ function submit() {
         <footer class="px-4 py-10 border-t border-white/5 bg-black/40 backdrop-blur">
             <div class="mx-auto max-w-7xl flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/55">
+                    <Link href="/login" class="hover:text-white transition-colors">
+                        Login
+                    </Link>
                     <Link :href="route('legal.privacy')" class="hover:text-white transition-colors">
                         Política de privacidade
                     </Link>
@@ -708,6 +844,79 @@ function submit() {
     mix-blend-mode: overlay;
 }
 
+.method-step-1 { --m1: 99, 102, 241; --m2: 34, 211, 238; }
+.method-step-2 { --m1: 236, 72, 153; --m2: 167, 139, 250; }
+.method-step-3 { --m1: 16, 185, 129; --m2: 34, 211, 238; }
+.method-step-4 { --m1: 167, 139, 250; --m2: 99, 102, 241; }
+
+.method-step-card {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 18px 60px rgba(0, 0, 0, 0.55);
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.method-step-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.75rem;
+    background: linear-gradient(120deg, rgba(var(--m1), 0.0) 0%, rgba(var(--m1), 0.65) 35%, rgba(var(--m2), 0.55) 70%, rgba(var(--m2), 0.0) 100%);
+    opacity: 0.35;
+    filter: blur(10px);
+    pointer-events: none;
+}
+
+.method-step-card::after {
+    content: '';
+    position: absolute;
+    top: -35%;
+    left: -60%;
+    width: 70%;
+    height: 170%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.10) 35%, rgba(255, 255, 255, 0) 70%);
+    transform: rotate(18deg);
+    opacity: 0.8;
+    pointer-events: none;
+    animation: method-sheen 7.5s ease-in-out infinite;
+}
+
+.method-step-bg {
+    background:
+        radial-gradient(900px 500px at 20% 25%, rgba(var(--m1), 0.24) 0%, rgba(var(--m1), 0.0) 55%),
+        radial-gradient(800px 520px at 85% 20%, rgba(var(--m2), 0.18) 0%, rgba(var(--m2), 0.0) 55%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.12));
+    background-size: 140% 140%;
+    background-position: 0% 40%;
+    opacity: 0.95;
+    animation: method-pan 10s ease-in-out infinite;
+}
+
+.method-step-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
+    opacity: 0.6;
+    mix-blend-mode: overlay;
+}
+
+.method-step-badge {
+    background: rgba(0, 0, 0, 0.25);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.method-step-icon {
+    color: rgba(var(--m2), 0.95);
+    filter: drop-shadow(0 0 18px rgba(var(--m2), 0.18));
+}
+
+.method-step-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+.method-step-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 26px 90px rgba(0, 0, 0, 0.7);
+}
+
 .futuristic-image {
     filter: saturate(1.25) contrast(1.15) brightness(1.05) drop-shadow(0 0 18px rgba(99, 102, 241, 0.22)) drop-shadow(0 0 34px rgba(34, 211, 238, 0.14));
     transform: translateZ(0);
@@ -757,6 +966,19 @@ function submit() {
     animation: hero-underline 3.8s ease-in-out infinite;
     pointer-events: none;
     z-index: 1;
+}
+
+@keyframes method-pan {
+    0% { background-position: 0% 40%; }
+    50% { background-position: 100% 60%; }
+    100% { background-position: 0% 40%; }
+}
+
+@keyframes method-sheen {
+    0% { transform: translateX(0) rotate(18deg); opacity: 0.0; }
+    15% { opacity: 0.8; }
+    50% { transform: translateX(240%) rotate(18deg); opacity: 0.0; }
+    100% { transform: translateX(240%) rotate(18deg); opacity: 0.0; }
 }
 
 @keyframes hero-gradient {

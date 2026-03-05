@@ -29,7 +29,9 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Admin — Entrar" />
+        <Head title="Admin — Entrar">
+            <meta name="robots" content="noindex,nofollow" />
+        </Head>
 
         <div v-if="status" class="mb-4 text-sm font-medium text-emerald-300">
             {{ status }}

@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage();
+const canAccessAdmin = computed(() => Boolean((page.props as any)?.auth?.user?.is_admin || (page.props as any)?.auth?.user?.is_staff));
+const isAdmin = computed(() => Boolean((page.props as any)?.auth?.user?.is_admin));
 </script>
 
 <template>
@@ -97,6 +100,7 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
+                            v-if="canAccessAdmin"
                             :href="route('admin.leads.index')"
                             :active="route().current('admin.leads.*')"
                             @click="showingNavigationDropdown = false"
@@ -111,6 +115,7 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
+                            v-if="canAccessAdmin"
                             :href="route('admin.projects.index')"
                             :active="route().current('admin.projects.*')"
                             @click="showingNavigationDropdown = false"
@@ -125,6 +130,7 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
+                            v-if="canAccessAdmin"
                             :href="route('admin.ai')"
                             :active="route().current('admin.ai')"
                             @click="showingNavigationDropdown = false"
@@ -143,6 +149,7 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
+                            v-if="canAccessAdmin"
                             :href="route('admin.landing.bento.edit')"
                             :active="route().current('admin.landing.bento.*')"
                             @click="showingNavigationDropdown = false"
@@ -154,6 +161,23 @@ const showingNavigationDropdown = ref(false);
                                     <path d="M11 11h8v6a2 2 0 01-2 2h-6v-8z" />
                                 </svg>
                                 Site
+                            </span>
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            v-if="isAdmin"
+                            :href="route('admin.team.index')"
+                            :active="route().current('admin.team.*')"
+                            @click="showingNavigationDropdown = false"
+                        >
+                            <span class="inline-flex items-center gap-3">
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path fill-rule="evenodd" d="M5 14a4 4 0 018 0v3H5v-3z" clip-rule="evenodd" />
+                                    <path d="M17 9a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    <path d="M17 14a3 3 0 00-3-3h-1.5a5.5 5.5 0 011.2 3H17z" />
+                                </svg>
+                                Equipe
                             </span>
                         </ResponsiveNavLink>
                     </div>
@@ -216,7 +240,7 @@ const showingNavigationDropdown = ref(false);
                             </span>
                         </NavLink>
 
-                        <NavLink :href="route('admin.leads.index')" :active="route().current('admin.leads.*')">
+                        <NavLink v-if="canAccessAdmin" :href="route('admin.leads.index')" :active="route().current('admin.leads.*')">
                             <span class="inline-flex items-center gap-3">
                                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" />
@@ -227,6 +251,7 @@ const showingNavigationDropdown = ref(false);
                         </NavLink>
 
                         <NavLink
+                            v-if="canAccessAdmin"
                             :href="route('admin.projects.index')"
                             :active="route().current('admin.projects.*')"
                         >
@@ -239,7 +264,7 @@ const showingNavigationDropdown = ref(false);
                             </span>
                         </NavLink>
 
-                        <NavLink :href="route('admin.ai')" :active="route().current('admin.ai')">
+                        <NavLink v-if="canAccessAdmin" :href="route('admin.ai')" :active="route().current('admin.ai')">
                             <span class="inline-flex items-center gap-3">
                                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M4 3a2 2 0 00-2 2v4a2 2 0 002 2h3V3H4z" />
@@ -254,6 +279,7 @@ const showingNavigationDropdown = ref(false);
                         </NavLink>
 
                         <NavLink
+                            v-if="canAccessAdmin"
                             :href="route('admin.landing.bento.edit')"
                             :active="route().current('admin.landing.bento.*')"
                         >
@@ -264,6 +290,18 @@ const showingNavigationDropdown = ref(false);
                                     <path d="M11 11h8v6a2 2 0 01-2 2h-6v-8z" />
                                 </svg>
                                 Site
+                            </span>
+                        </NavLink>
+
+                        <NavLink v-if="isAdmin" :href="route('admin.team.index')" :active="route().current('admin.team.*')">
+                            <span class="inline-flex items-center gap-3">
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path fill-rule="evenodd" d="M5 14a4 4 0 018 0v3H5v-3z" clip-rule="evenodd" />
+                                    <path d="M17 9a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    <path d="M17 14a3 3 0 00-3-3h-1.5a5.5 5.5 0 011.2 3H17z" />
+                                </svg>
+                                Equipe
                             </span>
                         </NavLink>
                     </nav>

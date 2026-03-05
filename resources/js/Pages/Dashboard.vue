@@ -9,6 +9,7 @@ type Metrics = {
     leads_30d: number;
     ia_requisicoes_7d: number;
     ia_custo_30d_usd: string;
+    ia_custo_30d_brl: string;
 };
 
 type RecentProject = {
@@ -37,7 +38,7 @@ const props = defineProps<{
 }>();
 
 const nf = new Intl.NumberFormat('pt-BR');
-const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' });
+const currencyBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 function fmtDate(iso: string | null) {
     if (!iso) return '—';
@@ -87,7 +88,7 @@ function fmtDate(iso: string | null) {
                             {{ nf.format(props.metrics.ia_requisicoes_7d) }}
                         </div>
                         <div class="mt-1 text-xs text-gray-500">
-                            Requisições (7 dias) • Custo (30 dias): {{ currency.format(Number(props.metrics.ia_custo_30d_usd || 0)) }}
+                            Requisições (7 dias) • Custo (30 dias): {{ currencyBRL.format(Number(props.metrics.ia_custo_30d_brl || 0)) }}
                         </div>
                     </div>
                 </div>

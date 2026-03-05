@@ -14,12 +14,12 @@ use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $projects = Project::query()
             ->orderBy('sort_order')
             ->orderByDesc('id')
-            ->get([
+            ->simplePaginate(25, [
                 'id',
                 'name',
                 'url',
@@ -31,7 +31,7 @@ class ProjectController extends Controller
                 'is_published',
                 'created_at',
             ])
-            ->map(fn (Project $p) => [
+            ->through(fn (Project $p) => [
                 'id' => $p->id,
                 'name' => $p->name,
                 'url' => $p->url,
@@ -44,7 +44,7 @@ class ProjectController extends Controller
                 'is_published' => $p->is_published,
                 'created_at' => $p->created_at?->toISOString(),
             ])
-            ->values();
+            ->withQueryString();
 
         return Inertia::render('Admin/Projects/Index', [
             'projects' => $projects,

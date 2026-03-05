@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
-import { onBeforeUnmount, ref } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 type BentoCard = {
     id: number;
@@ -23,6 +23,8 @@ const errorsById = ref<Record<number, { alt?: string; image?: string }>>({});
 const savedById = ref<Record<number, boolean>>({});
 
 const previewUrls = ref<Record<number, string>>({});
+const page = usePage();
+const isAdmin = computed(() => Boolean((page.props as any)?.auth?.user?.is_admin));
 
 function previewSrc(index: number) {
     return previewUrls.value[index] ?? props.cards[index]?.image_src ?? '';
@@ -129,11 +131,14 @@ onBeforeUnmount(() => {
                                                     type="file"
                                                     accept="image/png,image/jpeg,image/webp"
                                                     @change="pickImage(index, $event)"
-                                                    :disabled="uploadingById[card.id]"
+                                                    :disabled="uploadingById[card.id] || !isAdmin"
                                                     class="mt-2 w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                                                 />
                                                 <div class="mt-2 text-xs text-gray-500">
                                                     PNG/JPG/WebP (até 5MB).
+                                                </div>
+                                                <div v-if="!isAdmin" class="mt-2 text-xs text-gray-500">
+                                                    Somente admin pode alterar as imagens.
                                                 </div>
                                                 <div v-if="errorsById[card.id]?.image" class="mt-2 text-xs font-semibold text-red-600">
                                                     {{ errorsById[card.id]?.image }}
@@ -145,7 +150,7 @@ onBeforeUnmount(() => {
                                                 <input
                                                     v-model="alts[index]"
                                                     type="text"
-                                                    :disabled="uploadingById[card.id]"
+                                                    :disabled="uploadingById[card.id] || !isAdmin"
                                                     @blur="save(index, null)"
                                                     class="mt-2 w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                                                     placeholder="Descrição curta da imagem"

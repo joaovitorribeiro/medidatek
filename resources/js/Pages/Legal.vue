@@ -14,10 +14,26 @@ const updatedLabel = computed(() => {
     if (Number.isNaN(d.getTime())) return '';
     return d.toLocaleDateString('pt-BR');
 });
+
+const canonicalUrl = computed(() => (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : ''));
+const ogImageUrl = computed(() => (typeof window !== 'undefined' ? `${window.location.origin}/og/medidatek.svg` : '/og/medidatek.svg'));
 </script>
 
 <template>
-    <Head :title="`${title} — MedidaTek`" />
+    <Head :title="title">
+        <meta name="description" :content="`${title} da MedidaTek.`" />
+        <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+
+        <link rel="canonical" :href="canonicalUrl" />
+
+        <meta property="og:site_name" content="MedidaTek" />
+        <meta property="og:title" :content="`${title} - MedidaTek`" />
+        <meta property="og:description" :content="`${title} da MedidaTek.`" />
+        <meta property="og:type" content="article" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:url" :content="canonicalUrl" />
+        <meta property="og:image" :content="ogImageUrl" />
+    </Head>
 
     <div class="legal-universe min-h-screen bg-[#030305] text-white selection:bg-indigo-500/30 selection:text-indigo-200">
         <div class="aurora-bg fixed inset-0 z-0 pointer-events-none">
@@ -120,4 +136,3 @@ const updatedLabel = computed(() => {
     }
 }
 </style>
-

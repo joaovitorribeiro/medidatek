@@ -21,7 +21,9 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Recuperar senha" />
+        <Head title="Recuperar senha">
+            <meta name="robots" content="noindex,nofollow" />
+        </Head>
 
         <div class="mb-4 text-sm text-white/60">
             Esqueceu sua senha? Sem problema. Informe seu email e enviaremos um link para redefinição de senha.

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 type ProjectRow = {
     id: number;
@@ -14,11 +15,21 @@ type ProjectRow = {
     created_at: string;
 };
 
+type SimplePagination<T> = {
+    data: T[];
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    from: number | null;
+    to: number | null;
+};
+
 defineProps<{
-    projects: ProjectRow[];
+    projects: SimplePagination<ProjectRow>;
 }>();
 
 const deleteForm = useForm({});
+const page = usePage();
+const isAdmin = computed(() => Boolean((page.props as any)?.auth?.user?.is_admin));
 
 function destroy(id: number) {
     deleteForm.delete(route('admin.projects.destroy', id));
@@ -34,12 +45,31 @@ function destroy(id: number) {
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Projetos
                 </h2>
-                <Link
-                    :href="route('admin.projects.create')"
-                    class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-                >
-                    Novo projeto
-                </Link>
+                <div class="flex items-center gap-2">
+                    <Link
+                        v-if="isAdmin"
+                        :href="route('admin.projects.create')"
+                        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                    >
+                        Novo projeto
+                    </Link>
+                    <Link
+                        :href="projects.prev_page_url ?? ''"
+                        class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+                        :class="projects.prev_page_url ? '' : 'pointer-events-none opacity-50'"
+                        preserve-scroll
+                    >
+                        Anterior
+                    </Link>
+                    <Link
+                        :href="projects.next_page_url ?? ''"
+                        class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+                        :class="projects.next_page_url ? '' : 'pointer-events-none opacity-50'"
+                        preserve-scroll
+                    >
+                        Próximo
+                    </Link>
+                </div>
             </div>
         </template>
 
@@ -47,6 +77,11 @@ function destroy(id: number) {
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
+                        <div class="mb-4 flex justify-end text-sm text-gray-600">
+                            <span v-if="projects.from !== null && projects.to !== null">
+                                {{ projects.from }}–{{ projects.to }}
+                            </span>
+                        </div>
                         <div class="overflow-auto">
                             <table class="min-w-full text-left text-sm">
                                 <thead class="text-xs uppercase text-gray-500">
@@ -60,7 +95,7 @@ function destroy(id: number) {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
-                                    <tr v-for="row in projects" :key="row.id">
+                                    <tr v-for="row in projects.data" :key="row.id">
                                         <td class="px-3 py-2 text-gray-700">
                                             {{ row.sort_order }}
                                         </td>
@@ -103,7 +138,7 @@ function destroy(id: number) {
                                             </span>
                                         </td>
                                         <td class="px-3 py-2 text-right">
-                                            <div class="flex justify-end gap-3">
+                                            <div v-if="isAdmin" class="flex justify-end gap-3">
                                                 <Link
                                                     :href="route('admin.projects.edit', row.id)"
                                                     class="text-sm font-semibold text-gray-700 hover:text-gray-900"
@@ -125,7 +160,7 @@ function destroy(id: number) {
                             </table>
                         </div>
 
-                        <div v-if="projects.length === 0" class="text-sm text-gray-600">
+                        <div v-if="projects.data.length === 0" class="text-sm text-gray-600">
                             Nenhum projeto cadastrado ainda.
                         </div>
                     </div>

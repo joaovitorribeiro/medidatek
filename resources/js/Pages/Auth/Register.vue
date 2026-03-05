@@ -24,7 +24,9 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Criar conta" />
+        <Head title="Criar conta">
+            <meta name="robots" content="noindex,nofollow" />
+        </Head>
 
         <form @submit.prevent="submit">
             <div>
