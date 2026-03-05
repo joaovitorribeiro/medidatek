@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import AiChatWidget from '@/Components/Marketing/AiChatWidget.vue';
 
@@ -33,8 +33,13 @@ const calcTicket = ref(3500);
 const calcHours = ref(120);
 const calcHourlyCost = ref(65);
 const integrationList = [
-    'HubSpot', 'Pipedrive', 'RD Station', 'WhatsApp', 'E-mail',
-    'Stripe', 'Mercado Pago', 'Bling', 'Omie', 'Google Sheets', 'ERP/API'
+    'Site institucional', 'Landing page', 'E-commerce / Loja virtual', 'Marketplace',
+    'Portal do cliente', 'Área de membros', 'SaaS sob medida', 'App iOS/Android (PWA)',
+    'Sistema de pedidos', 'Orçamentos & propostas', 'CRM sob medida', 'ERP sob medida',
+    'Painel BI / Dashboards', 'Integração com WhatsApp', 'Chatbot/IA', 'Automação de processos',
+    'Integrações via API', 'Webhooks', 'Notificações (e-mail/SMS/push)',
+    'Checkout & pagamentos', 'Assinaturas', 'Split de pagamento', 'PIX', 'Cartão', 'Boleto',
+    'STRIPE', 'MERCADO PAGO', 'ASAAS', 'PAGSEGURO', 'IUGU', 'PAYPAL'
 ];
 
 function proofHost(url: string) {
@@ -172,6 +177,7 @@ function submit() {
                 <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
                 <div class="hidden sm:flex items-center gap-6 text-xs font-medium text-white/70">
                     <a href="#metodo" class="hover:text-white transition-colors">Método</a>
+                    <a href="#infraestrutura" class="hover:text-white transition-colors">Infraestrutura</a>
                     <a href="#projetos" class="hover:text-white transition-colors">Projetos</a>
                     <a href="#impacto" class="hover:text-white transition-colors">Impacto</a>
                 </div>
@@ -186,8 +192,8 @@ function submit() {
             <section class="min-h-screen flex flex-col justify-center items-center px-4 pt-32 pb-20 text-center">
                 <div class="animate-on-scroll delay-100 inline-flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider text-indigo-200 backdrop-blur-md">
                     <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
                     Disponível para novos projetos
                 </div>
@@ -232,11 +238,36 @@ function submit() {
                 </div>
             </section>
 
-            <!-- Bento Grid de Benefícios -->
             <section id="metodo" class="py-32 px-4 max-w-7xl mx-auto">
                 <div class="mb-12">
-                    <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Engenharia de Impacto</h2>
-                    <p class="mt-4 text-white/60 max-w-2xl text-lg">Não é só código. É método, design e estratégia para escalar sem quebrar.</p>
+                    <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-indigo-200">
+                        Engenharia de Impacto
+                    </div>
+                    <h2 class="mt-6 text-4xl md:text-5xl font-medium tracking-tight">Método</h2>
+                    <p class="mt-4 text-white/60 max-w-2xl text-lg">Execução com processo. Clareza de escopo. Entrega com padrão de engenharia.</p>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-4 mb-10">
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                        <div class="text-xs font-semibold tracking-wider text-white/50">01</div>
+                        <div class="mt-2 text-lg font-semibold text-white">Diagnóstico</div>
+                        <div class="mt-2 text-sm text-white/60">Mapeamos processo, dados e riscos para acertar a arquitetura.</div>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                        <div class="text-xs font-semibold tracking-wider text-white/50">02</div>
+                        <div class="mt-2 text-lg font-semibold text-white">Design & UX</div>
+                        <div class="mt-2 text-sm text-white/60">Fluxos e interface com foco em conversão e velocidade operacional.</div>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                        <div class="text-xs font-semibold tracking-wider text-white/50">03</div>
+                        <div class="mt-2 text-lg font-semibold text-white">Build</div>
+                        <div class="mt-2 text-sm text-white/60">Entrega incremental, testes onde importa e performance como requisito.</div>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                        <div class="text-xs font-semibold tracking-wider text-white/50">04</div>
+                        <div class="mt-2 text-lg font-semibold text-white">Evolução</div>
+                        <div class="mt-2 text-sm text-white/60">Métricas, melhorias contínuas e novas automações com IA.</div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
@@ -341,6 +372,93 @@ function submit() {
                             </div>
                             <h3 class="text-2xl font-medium text-white mb-1">Segurança Enterprise</h3>
                             <p class="text-sm text-white/60 max-w-xs">Proteção de dados nível bancário, conformidade LGPD e backups automáticos.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="infraestrutura" class="py-28 px-4 max-w-7xl mx-auto">
+                <div class="mb-12">
+                    <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Infraestrutura</h2>
+                    <p class="mt-4 text-white/60 max-w-2xl text-lg">O que sustenta o método: deploy, performance, segurança e observabilidade para crescer sem susto.</p>
+                </div>
+
+                <div class="grid gap-6 md:grid-cols-3">
+                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/15 via-transparent to-transparent"></div>
+                        <div class="relative">
+                            <div class="flex items-center gap-3">
+                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-500/15 ring-1 ring-indigo-500/25">
+                                    <svg class="h-5 w-5 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7a4 4 0 014-4h8a4 4 0 014 4v10a4 4 0 01-4 4H8a4 4 0 01-4-4V7z"/></svg>
+                                </div>
+                                <div class="text-lg font-semibold text-white">Cloud & Deploy</div>
+                            </div>
+                            <div class="mt-3 text-sm text-white/60">Pipeline de deploy previsível, ambientes separados e rollback rápido.</div>
+                        </div>
+                    </div>
+
+                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
+                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-transparent to-transparent"></div>
+                        <div class="relative">
+                            <div class="flex items-center gap-3">
+                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-500/15 ring-1 ring-emerald-500/25">
+                                    <svg class="h-5 w-5 text-emerald-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>
+                                </div>
+                                <div class="text-lg font-semibold text-white">Performance</div>
+                            </div>
+                            <div class="mt-3 text-sm text-white/60">Cache, filas e otimizações para manter resposta rápida com carga alta.</div>
+                        </div>
+                    </div>
+
+                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
+                        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/15 via-transparent to-transparent"></div>
+                        <div class="relative">
+                            <div class="flex items-center gap-3">
+                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-500/15 ring-1 ring-cyan-500/25">
+                                    <svg class="h-5 w-5 text-cyan-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h2m-6 6h6m3-3a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+                                </div>
+                                <div class="text-lg font-semibold text-white">Observabilidade</div>
+                            </div>
+                            <div class="mt-3 text-sm text-white/60">Logs úteis, métricas e alertas para detectar problema antes do cliente.</div>
+                        </div>
+                    </div>
+
+                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/15 via-transparent to-transparent"></div>
+                        <div class="relative">
+                            <div class="flex items-center gap-3">
+                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-purple-500/15 ring-1 ring-purple-500/25">
+                                    <svg class="h-5 w-5 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6-8V7a6 6 0 1112 0v2m-1 12H7a2 2 0 01-2-2v-8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <div class="text-lg font-semibold text-white">Segurança</div>
+                            </div>
+                            <div class="mt-3 text-sm text-white/60">Boas práticas, validações e controle de acesso para reduzir risco real.</div>
+                        </div>
+                    </div>
+
+                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
+                        <div class="absolute inset-0 bg-gradient-to-br from-rose-500/15 via-transparent to-transparent"></div>
+                        <div class="relative">
+                            <div class="flex items-center gap-3">
+                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-rose-500/15 ring-1 ring-rose-500/25">
+                                    <svg class="h-5 w-5 text-rose-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                </div>
+                                <div class="text-lg font-semibold text-white">Backups & DR</div>
+                            </div>
+                            <div class="mt-3 text-sm text-white/60">Backups automáticos e plano de recuperação para manter operação viva.</div>
+                        </div>
+                    </div>
+
+                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all md:col-span-3">
+                        <div class="absolute inset-0 bg-gradient-to-r from-white/8 via-transparent to-transparent"></div>
+                        <div class="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                            <div class="max-w-2xl">
+                                <div class="text-lg font-semibold text-white">Infra pronta para escalar</div>
+                                <div class="mt-2 text-sm text-white/60">A infraestrutura não pode ser um “depois”. Ela faz parte do método para evitar retrabalho e custo invisível.</div>
+                            </div>
+                            <a href="#contato" class="inline-flex items-center justify-center rounded-full bg-white px-6 py-2 text-sm font-semibold text-black hover:bg-zinc-200 transition-colors">
+                                Planejar comigo
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -582,19 +700,19 @@ function submit() {
             </section>
         </main>
 
-        <footer class="py-20 px-4 border-t border-white/5 bg-black">
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                <div class="text-center md:text-left">
-                    <h2 class="text-[10vw] md:text-[5vw] font-bold leading-none tracking-tighter text-white/20 select-none">MEDIDATEK</h2>
+        <footer class="px-4 py-10 border-t border-white/5 bg-black/40 backdrop-blur">
+            <div class="mx-auto max-w-7xl flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/55">
+                    <Link :href="route('legal.privacy')" class="hover:text-white transition-colors">
+                        Política de privacidade
+                    </Link>
+                    <Link :href="route('legal.terms')" class="hover:text-white transition-colors">
+                        Termos de uso
+                    </Link>
                 </div>
-                <div class="flex gap-8 text-sm text-white/40">
-                    <a href="#" class="hover:text-white transition-colors">LinkedIn</a>
-                    <a href="#" class="hover:text-white transition-colors">Instagram</a>
-                    <a href="#" class="hover:text-white transition-colors">GitHub</a>
+                <div class="text-xs text-white/35">
+                    © {{ year }} MedidaTek. Todos os direitos reservados.
                 </div>
-            </div>
-            <div class="max-w-7xl mx-auto mt-8 text-center md:text-right text-xs text-white/20">
-                © {{ year }} MedidaTek. All rights reserved.
             </div>
         </footer>
 

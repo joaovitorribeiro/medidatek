@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LeadController;
 use App\Models\LandingBentoCard;
+use App\Models\LegalDocument;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -118,6 +119,56 @@ $serveProjectImage = function (string $filename) {
 
 Route::get('/midia/projetos/{filename}', $serveProjectImage)->name('media.projects');
 Route::get('/storage/projects/{filename}', $serveProjectImage);
+
+Route::get('/politica-de-privacidade', function () {
+    $title = 'Política de Privacidade';
+    $content = '';
+    $updatedAt = null;
+
+    if (Schema::hasTable('legal_documents')) {
+        $doc = LegalDocument::query()
+            ->where('key', 'privacy')
+            ->where('is_published', true)
+            ->first();
+
+        if ($doc) {
+            $title = $doc->title;
+            $content = $doc->content;
+            $updatedAt = $doc->updated_at?->toISOString();
+        }
+    }
+
+    return Inertia::render('Legal', [
+        'title' => $title,
+        'content' => $content,
+        'updated_at' => $updatedAt,
+    ]);
+})->name('legal.privacy');
+
+Route::get('/termos-de-uso', function () {
+    $title = 'Termos de Uso';
+    $content = '';
+    $updatedAt = null;
+
+    if (Schema::hasTable('legal_documents')) {
+        $doc = LegalDocument::query()
+            ->where('key', 'terms')
+            ->where('is_published', true)
+            ->first();
+
+        if ($doc) {
+            $title = $doc->title;
+            $content = $doc->content;
+            $updatedAt = $doc->updated_at?->toISOString();
+        }
+    }
+
+    return Inertia::render('Legal', [
+        'title' => $title,
+        'content' => $content,
+        'updated_at' => $updatedAt,
+    ]);
+})->name('legal.terms');
 
 Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
 
