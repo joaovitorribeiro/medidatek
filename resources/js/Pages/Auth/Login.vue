@@ -31,55 +31,58 @@ const submit = () => {
     <GuestLayout>
         <Head title="Admin — Entrar" />
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
+        <div v-if="status" class="mb-4 text-sm font-medium text-emerald-300">
             {{ status }}
         </div>
 
         <form @submit.prevent="submit">
-            <div class="mb-6">
-                <div class="text-lg font-semibold text-gray-900">
-                    Acesso administrativo
+            <div class="mb-8">
+                <div class="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">
+                    Área administrativa
                 </div>
-                <div class="mt-1 text-sm text-gray-600">
+                <div class="mt-2 text-2xl font-semibold tracking-tight text-white">
+                    Entrar
+                </div>
+                <div class="mt-2 text-sm text-white/60">
                     Use o e-mail e senha do administrador.
                 </div>
             </div>
 
             <div>
-                <InputLabel for="email" value="E-mail" />
+                <InputLabel for="email" value="E-mail" class="text-white/70" />
 
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-2 block w-full rounded-xl border-white/10 bg-white/5 text-white shadow-none placeholder:text-white/30 focus:border-indigo-400 focus:ring-indigo-400/20"
                     v-model="form.email"
                     required
                     autofocus
                     autocomplete="username"
                 />
 
-                <InputError class="mt-2" :message="form.errors.email" />
+                <InputError class="mt-2 text-rose-300" :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Senha" />
+                <InputLabel for="password" value="Senha" class="text-white/70" />
 
                 <TextInput
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-2 block w-full rounded-xl border-white/10 bg-white/5 text-white shadow-none placeholder:text-white/30 focus:border-indigo-400 focus:ring-indigo-400/20"
                     v-model="form.password"
                     required
                     autocomplete="current-password"
                 />
 
-                <InputError class="mt-2" :message="form.errors.password" />
+                <InputError class="mt-2 text-rose-300" :message="form.errors.password" />
             </div>
 
             <div class="mt-4 block">
                 <label class="flex items-center">
                     <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600">Manter conectado</span>
+                    <span class="ms-2 text-sm text-white/60">Manter conectado</span>
                 </label>
             </div>
 
@@ -87,13 +90,13 @@ const submit = () => {
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-md text-sm text-white/60 underline decoration-white/30 underline-offset-4 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 >
                     Esqueci minha senha
                 </Link>
 
                 <PrimaryButton
-                    class="ms-4"
+                    class="ms-4 !rounded-full !bg-white !px-7 !py-3 !text-sm !font-semibold !normal-case !tracking-normal !text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:!bg-zinc-200 focus:!bg-zinc-200 focus:!ring-indigo-500/30 focus:!ring-offset-0 active:!bg-white"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >

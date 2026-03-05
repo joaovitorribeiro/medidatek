@@ -10,8 +10,14 @@ type ProofLink = {
     note?: string;
 };
 
+type BentoImage = {
+    src: string;
+    alt: string;
+};
+
 const props = defineProps<{
     proofLinks: ProofLink[];
+    bentoImages: Record<string, BentoImage>;
 }>();
 
 const sentOnce = ref(false);
@@ -39,6 +45,10 @@ function proofHost(url: string) {
 
 const proofLinks = computed(() => props.proofLinks);
 const hasProofLinks = computed(() => proofLinks.value.length > 0);
+
+function bentoImage(key: string): BentoImage {
+    return props.bentoImages?.[key] ?? { src: '', alt: '' };
+}
 
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 function formatBRL(value: number) {
@@ -181,12 +191,15 @@ function submit() {
                 </div>
                 
                 <h1 class="animate-on-scroll delay-200 mt-8 max-w-4xl text-5xl font-medium tracking-tight sm:text-7xl lg:text-8xl leading-[0.9]">
-                    Sistemas que <br />
-                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/50">mudam o jogo.</span>
+                    <span class="hero-title-gradient hero-title-soft">Escala não é Sorte</span>
+                    <br />
+                    <span class="hero-title-gradient hero-title-strong">
+                        <span class="hero-title-strong-text">É Sistema.</span>
+                    </span>
                 </h1>
 
                 <p class="animate-on-scroll delay-300 mt-8 max-w-xl text-lg text-white/60 leading-relaxed font-light">
-                    Não entregamos apenas código. Entregamos clareza operacional, design de elite e inteligência que escala seu negócio.
+                   Tecnologia sob medida para crescer.
                 </p>
 
                 <div class="animate-on-scroll delay-400 mt-10 flex flex-col sm:flex-row items-center gap-4">
@@ -228,8 +241,8 @@ function submit() {
                     <!-- Card 1: Arquitetura (Large) -->
                     <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop" alt="Code" class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+                            <img :src="bentoImage('architecture').src" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-end p-8">
                             <div class="inline-flex items-center gap-2 mb-3">
@@ -243,8 +256,8 @@ function submit() {
                     <!-- Card 2: Velocidade -->
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop" alt="Speed" class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700 mix-blend-luminosity" />
-                            <div class="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"></div>
+                            <img :src="bentoImage('speed').src" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                            <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white mb-1">Velocidade Real</h3>
@@ -260,7 +273,8 @@ function submit() {
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
                         <div class="absolute inset-0 z-0">
-                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" alt="AI" class="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700" />
+                            <img :src="bentoImage('ai').src" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
                             <div class="self-end">
@@ -276,7 +290,8 @@ function submit() {
                     <!-- Card 4: Design System -->
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                             <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop" alt="Design" class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700 grayscale" />
+                             <img :src="bentoImage('design').src" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
                             <div class="grid grid-cols-2 gap-2 opacity-80">
@@ -294,7 +309,7 @@ function submit() {
                     <!-- Card 5: Mobile First (New) -->
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
-                        <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=1000&auto=format&fit=crop" class="absolute right-0 top-0 h-full w-2/3 object-cover opacity-50 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" alt="Mobile" />
+                        <img :src="bentoImage('mobile').src" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
                         
                         <div class="relative z-20 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
@@ -311,40 +326,78 @@ function submit() {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Card 6: Security (New) -->
+                    <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
+                        <div class="absolute inset-0 z-0">
+                            <img :src="bentoImage('security').src" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                            <div class="absolute inset-0 bg-gradient-to-l from-black via-black/40 to-transparent"></div>
+                        </div>
+                        <div class="relative z-10 h-full flex flex-col justify-center p-8 text-right items-end">
+                            <div class="inline-flex items-center gap-2 mb-3">
+                                <span class="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">Blindado</span>
+                            </div>
+                            <h3 class="text-2xl font-medium text-white mb-1">Segurança Enterprise</h3>
+                            <p class="text-sm text-white/60 max-w-xs">Proteção de dados nível bancário, conformidade LGPD e backups automáticos.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Galeria de Projetos Horizontal -->
             <section v-if="hasProofLinks" id="projetos" class="py-20 overflow-hidden">
                 <div class="px-4 max-w-7xl mx-auto mb-10 flex justify-between items-end">
-                    <h2 class="text-3xl font-medium">Obras recentes</h2>
-                    <a href="#" class="text-sm text-white/50 hover:text-white transition-colors">Ver case studies →</a>
+                    <h2 class="text-3xl font-medium">Projetos recentes</h2>   
                 </div>
-                
-                <div class="flex gap-6 px-4 overflow-x-auto pb-8 snap-x scrollbar-hide">
-                    <a 
-                        v-for="(item, index) in proofLinks" 
-                        :key="item.url"
-                        :href="item.url"
-                        target="_blank"
-                        class="animate-on-scroll min-w-[300px] md:min-w-[400px] snap-center group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10"
-                        :style="{ transitionDelay: `${index * 100}ms` }"
-                    >
-                        <!-- Placeholder Gradient for Project Image -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"></div>
-                        
-                        <div class="absolute inset-0 p-6 flex flex-col justify-between bg-gradient-to-t from-black/80 to-transparent">
-                            <div class="flex justify-end">
-                                <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
-                                    {{ item.tag }}
+
+                <div class="projects-marquee-container px-4">
+                    <div class="projects-marquee-track">
+                        <a
+                            v-for="(item, index) in proofLinks"
+                            :key="`p-${index}-${item.url}`"
+                            :href="item.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/20 transition-all"
+                        >
+                            <div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"></div>
+
+                            <div class="absolute inset-0 p-6 flex flex-col justify-between bg-gradient-to-t from-black/80 to-transparent">
+                                <div class="flex justify-end">
+                                    <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
+                                        {{ item.tag }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white group-hover:text-indigo-200 transition-colors">{{ item.name }}</h3>
+                                    <p class="text-sm text-white/70 mt-1 line-clamp-2">{{ item.note || 'Plataforma web de alta performance.' }}</p>
                                 </div>
                             </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white group-hover:text-indigo-200 transition-colors">{{ item.name }}</h3>
-                                <p class="text-sm text-white/70 mt-1 line-clamp-2">{{ item.note || 'Plataforma web de alta performance.' }}</p>
+                        </a>
+
+                        <a
+                            v-for="(item, index) in proofLinks"
+                            :key="`d-${index}-${item.url}`"
+                            :href="item.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/20 transition-all"
+                        >
+                            <div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"></div>
+
+                            <div class="absolute inset-0 p-6 flex flex-col justify-between bg-gradient-to-t from-black/80 to-transparent">
+                                <div class="flex justify-end">
+                                    <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
+                                        {{ item.tag }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white group-hover:text-indigo-200 transition-colors">{{ item.name }}</h3>
+                                    <p class="text-sm text-white/70 mt-1 line-clamp-2">{{ item.note || 'Plataforma web de alta performance.' }}</p>
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 </div>
             </section>
 
@@ -425,7 +478,7 @@ function submit() {
                             <div v-if="step === 1" key="step1" class="space-y-6">
                                 <h3 class="text-xl font-medium">O que é prioridade máxima hoje?</h3>
                                 <div class="grid gap-3">
-                                    <label v-for="opt in ['Aumentar Vendas', 'Otimizar Processos', 'Integração de Sistemas', 'Nova Plataforma']" :key="opt" 
+                                    <label v-for="opt in ['Aumentar Vendas', 'Otimizar Processos', 'Integração de Sistemas', 'Novo Sistema']" :key="opt" 
                                         class="flex items-center p-4 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 transition-colors"
                                         :class="form.pain === opt ? 'bg-indigo-500/20 border-indigo-500/50' : ''"
                                     >
@@ -564,6 +617,68 @@ function submit() {
     mix-blend-mode: overlay;
 }
 
+.futuristic-image {
+    filter: saturate(1.25) contrast(1.15) brightness(1.05) drop-shadow(0 0 18px rgba(99, 102, 241, 0.22)) drop-shadow(0 0 34px rgba(34, 211, 238, 0.14));
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.hero-title-gradient {
+    display: inline-block;
+    color: transparent;
+    background-image: linear-gradient(90deg, rgba(165, 180, 252, 1) 0%, rgba(34, 211, 238, 1) 22%, rgba(52, 211, 153, 1) 50%, rgba(167, 139, 250, 1) 75%, rgba(236, 72, 153, 1) 100%);
+    background-size: 320% 100%;
+    background-position: 0% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 18px rgba(99, 102, 241, 0.22)) drop-shadow(0 0 26px rgba(34, 211, 238, 0.14));
+    animation: hero-gradient 9s ease-in-out infinite;
+}
+
+.hero-title-soft {
+    opacity: 0.95;
+}
+
+.hero-title-strong {
+    position: relative;
+    letter-spacing: -0.02em;
+    z-index: 0;
+    isolation: isolate;
+}
+
+.hero-title-strong-text {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title-strong::after {
+    content: '';
+    position: absolute;
+    left: -0.08em;
+    right: -0.08em;
+    bottom: -0.24em;
+    height: 0.12em;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(34, 211, 238, 0.0) 0%, rgba(34, 211, 238, 0.7) 20%, rgba(167, 139, 250, 0.9) 55%, rgba(236, 72, 153, 0.75) 85%, rgba(236, 72, 153, 0.0) 100%);
+    filter: blur(8px);
+    opacity: 0.7;
+    transform: translateZ(0);
+    animation: hero-underline 3.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes hero-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes hero-underline {
+    0%, 100% { opacity: 0.55; transform: translateY(0) scaleX(0.92); }
+    50% { opacity: 0.85; transform: translateY(-1px) scaleX(1); }
+}
+
 @keyframes float {
     0%, 100% { transform: translate(0, 0); }
     33% { transform: translate(30px, -50px); }
@@ -601,6 +716,54 @@ function submit() {
 @keyframes marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
+}
+
+.projects-marquee-container {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.projects-marquee-track {
+    display: flex;
+    --projects-marquee-gap: 1.5rem;
+    gap: var(--projects-marquee-gap);
+    width: max-content;
+    padding-bottom: 2rem;
+    --projects-marquee-duration: 70s;
+    animation: projects-marquee var(--projects-marquee-duration) linear infinite;
+    animation-delay: calc(var(--projects-marquee-duration) * -0.5);
+    will-change: transform;
+}
+
+.projects-marquee-container:hover .projects-marquee-track {
+    animation-play-state: paused;
+}
+
+@keyframes projects-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-50% - (var(--projects-marquee-gap) * 0.5))); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .projects-marquee-container {
+        overflow-x: auto;
+        mask-image: none;
+    }
+
+    .projects-marquee-track {
+        animation: none;
+        padding-bottom: 0;
+    }
+
+    .hero-title-gradient {
+        animation: none;
+        background-position: 50% 50%;
+    }
+
+    .hero-title-strong::after {
+        animation: none;
+        opacity: 0.6;
+    }
 }
 
 /* UI Elements */
