@@ -42,6 +42,11 @@ const integrationList = [
     'STRIPE', 'MERCADO PAGO', 'ASAAS', 'PAGSEGURO', 'IUGU', 'PAYPAL'
 ];
 
+const featuredIntegrations = new Set(['Marketplace', 'Portal do cliente', 'Área de membros', 'SaaS sob medida']);
+function isFeaturedIntegration(tech: string) {
+    return featuredIntegrations.has(tech);
+}
+
 function proofHost(url: string) {
     try {
         return new URL(url).hostname.replace(/^www\./, '');
@@ -227,11 +232,25 @@ function submit() {
             <section class="py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm">
                 <div class="marquee-container">
                     <div class="marquee-content">
-                        <span v-for="tech in integrationList" :key="tech" class="text-2xl font-bold text-white/10 px-8 uppercase tracking-widest hover:text-white/30 transition-colors cursor-default">
+                        <span
+                            v-for="tech in integrationList"
+                            :key="tech"
+                            class="font-bold px-8 uppercase tracking-widest transition-colors cursor-default"
+                            :class="isFeaturedIntegration(tech)
+                                ? 'text-3xl text-white/60 drop-shadow-[0_0_18px_rgba(16,185,129,0.18)] hover:text-white/80'
+                                : 'text-2xl text-white/15 hover:text-white/30'"
+                        >
                             {{ tech }}
                         </span>
                         <!-- Duplicate for smooth loop -->
-                        <span v-for="tech in integrationList" :key="`dup-${tech}`" class="text-2xl font-bold text-white/10 px-8 uppercase tracking-widest hover:text-white/30 transition-colors cursor-default">
+                        <span
+                            v-for="tech in integrationList"
+                            :key="`dup-${tech}`"
+                            class="font-bold px-8 uppercase tracking-widest transition-colors cursor-default"
+                            :class="isFeaturedIntegration(tech)
+                                ? 'text-3xl text-white/60 drop-shadow-[0_0_18px_rgba(16,185,129,0.18)] hover:text-white/80'
+                                : 'text-2xl text-white/15 hover:text-white/30'"
+                        >
                             {{ tech }}
                         </span>
                     </div>
@@ -269,9 +288,15 @@ function submit() {
                         <div class="mt-2 text-sm text-white/60">Métricas, melhorias contínuas e novas automações com IA.</div>
                     </div>
                 </div>
+            </section>
+
+            <section id="infraestrutura" class="py-28 px-4 max-w-7xl mx-auto">
+                <div class="mb-12">
+                    <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Infraestrutura</h2>
+                    <p class="mt-4 text-white/60 max-w-2xl text-lg">A base que sustenta o sistema: arquitetura, performance, IA, design, mobile e segurança.</p>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
-                    <!-- Card 1: Arquitetura (Large) -->
                     <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
                             <img :src="bentoImage('architecture').src" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
@@ -286,7 +311,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Card 2: Velocidade -->
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
                             <img :src="bentoImage('speed').src" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
@@ -302,7 +326,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Card 3: IA -->
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
                         <div class="absolute inset-0 z-0">
@@ -320,7 +343,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Card 4: Design System -->
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
                              <img :src="bentoImage('design').src" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
@@ -339,7 +361,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Card 5: Mobile First (New) -->
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
                         <img :src="bentoImage('mobile').src" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
@@ -360,7 +381,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Card 6: Security (New) -->
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
                             <img :src="bentoImage('security').src" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
@@ -372,93 +392,6 @@ function submit() {
                             </div>
                             <h3 class="text-2xl font-medium text-white mb-1">Segurança Enterprise</h3>
                             <p class="text-sm text-white/60 max-w-xs">Proteção de dados nível bancário, conformidade LGPD e backups automáticos.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="infraestrutura" class="py-28 px-4 max-w-7xl mx-auto">
-                <div class="mb-12">
-                    <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Infraestrutura</h2>
-                    <p class="mt-4 text-white/60 max-w-2xl text-lg">O que sustenta o método: deploy, performance, segurança e observabilidade para crescer sem susto.</p>
-                </div>
-
-                <div class="grid gap-6 md:grid-cols-3">
-                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/15 via-transparent to-transparent"></div>
-                        <div class="relative">
-                            <div class="flex items-center gap-3">
-                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-500/15 ring-1 ring-indigo-500/25">
-                                    <svg class="h-5 w-5 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7a4 4 0 014-4h8a4 4 0 014 4v10a4 4 0 01-4 4H8a4 4 0 01-4-4V7z"/></svg>
-                                </div>
-                                <div class="text-lg font-semibold text-white">Cloud & Deploy</div>
-                            </div>
-                            <div class="mt-3 text-sm text-white/60">Pipeline de deploy previsível, ambientes separados e rollback rápido.</div>
-                        </div>
-                    </div>
-
-                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-transparent to-transparent"></div>
-                        <div class="relative">
-                            <div class="flex items-center gap-3">
-                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-500/15 ring-1 ring-emerald-500/25">
-                                    <svg class="h-5 w-5 text-emerald-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>
-                                </div>
-                                <div class="text-lg font-semibold text-white">Performance</div>
-                            </div>
-                            <div class="mt-3 text-sm text-white/60">Cache, filas e otimizações para manter resposta rápida com carga alta.</div>
-                        </div>
-                    </div>
-
-                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/15 via-transparent to-transparent"></div>
-                        <div class="relative">
-                            <div class="flex items-center gap-3">
-                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-500/15 ring-1 ring-cyan-500/25">
-                                    <svg class="h-5 w-5 text-cyan-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h2m-6 6h6m3-3a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
-                                </div>
-                                <div class="text-lg font-semibold text-white">Observabilidade</div>
-                            </div>
-                            <div class="mt-3 text-sm text-white/60">Logs úteis, métricas e alertas para detectar problema antes do cliente.</div>
-                        </div>
-                    </div>
-
-                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/15 via-transparent to-transparent"></div>
-                        <div class="relative">
-                            <div class="flex items-center gap-3">
-                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-purple-500/15 ring-1 ring-purple-500/25">
-                                    <svg class="h-5 w-5 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6-8V7a6 6 0 1112 0v2m-1 12H7a2 2 0 01-2-2v-8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2z"/></svg>
-                                </div>
-                                <div class="text-lg font-semibold text-white">Segurança</div>
-                            </div>
-                            <div class="mt-3 text-sm text-white/60">Boas práticas, validações e controle de acesso para reduzir risco real.</div>
-                        </div>
-                    </div>
-
-                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all">
-                        <div class="absolute inset-0 bg-gradient-to-br from-rose-500/15 via-transparent to-transparent"></div>
-                        <div class="relative">
-                            <div class="flex items-center gap-3">
-                                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-rose-500/15 ring-1 ring-rose-500/25">
-                                    <svg class="h-5 w-5 text-rose-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                                </div>
-                                <div class="text-lg font-semibold text-white">Backups & DR</div>
-                            </div>
-                            <div class="mt-3 text-sm text-white/60">Backups automáticos e plano de recuperação para manter operação viva.</div>
-                        </div>
-                    </div>
-
-                    <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-md ring-1 ring-white/5 hover:ring-white/15 transition-all md:col-span-3">
-                        <div class="absolute inset-0 bg-gradient-to-r from-white/8 via-transparent to-transparent"></div>
-                        <div class="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                            <div class="max-w-2xl">
-                                <div class="text-lg font-semibold text-white">Infra pronta para escalar</div>
-                                <div class="mt-2 text-sm text-white/60">A infraestrutura não pode ser um “depois”. Ela faz parte do método para evitar retrabalho e custo invisível.</div>
-                            </div>
-                            <a href="#contato" class="inline-flex items-center justify-center rounded-full bg-white px-6 py-2 text-sm font-semibold text-black hover:bg-zinc-200 transition-colors">
-                                Planejar comigo
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -868,7 +801,7 @@ function submit() {
 
 .marquee-content {
     display: inline-block;
-    animation: marquee 40s linear infinite;
+    animation: marquee 55s linear infinite;
 }
 
 @keyframes marquee {
