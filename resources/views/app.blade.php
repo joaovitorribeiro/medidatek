@@ -12,12 +12,24 @@
 
         <!-- Scripts -->
         @routes
-        @if (!app()->environment('testing'))
+        @php
+            $hasViteAssets = file_exists(public_path('hot')) || file_exists(public_path('build/manifest.json'));
+        @endphp
+        @if ($hasViteAssets && !app()->environment('testing'))
             @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])
         @endif
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
-        @inertia
+        @if ($hasViteAssets)
+            @inertia
+        @else
+            <div class="min-h-screen flex items-center justify-center p-6">
+                <div class="max-w-xl w-full rounded-lg border border-gray-200 bg-white p-6">
+                    <div class="text-lg font-semibold text-gray-900">{{ config('app.name', 'MedidaTek') }}</div>
+                    <div class="mt-2 text-sm text-gray-600">Os assets do front-end ainda não foram compilados no servidor.</div>
+                </div>
+            </div>
+        @endif
     </body>
 </html>
