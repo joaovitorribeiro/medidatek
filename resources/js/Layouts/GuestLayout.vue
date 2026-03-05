@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 </script>
 
 <template>
@@ -12,8 +13,8 @@ import { Link } from '@inertiajs/vue3';
         </div>
 
         <div class="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-10">
-            <Link href="/" class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold tracking-widest text-white/90 backdrop-blur">
-                MedidaTek
+            <Link href="/" class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-3 text-xs font-semibold tracking-widest text-white/90 backdrop-blur hover:bg-white/10 transition-colors">
+                <ApplicationLogo />
             </Link>
 
             <div class="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-6 py-6 shadow-2xl backdrop-blur-xl">

@@ -234,7 +234,21 @@ function submit() {
         <!-- Floating Navbar -->
         <header class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
             <nav class="glass-nav flex items-center gap-6 rounded-full px-6 py-3 ring-1 ring-white/10 backdrop-blur-xl">
-                <a href="#" class="text-sm font-bold tracking-tight text-white">MedidaTek</a>
+                <a href="#" class="flex items-center gap-2 group">
+                    <!-- Logo Tech -->
+                    <div class="relative flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/20 group-hover:bg-indigo-500/20 group-hover:ring-indigo-500/40 transition-all duration-300">
+                        <div class="absolute inset-0 rounded-lg bg-indigo-500/20 blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <svg class="relative z-10 h-5 w-5 text-indigo-500 group-hover:text-indigo-400 transition-colors" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 6V18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M20 6V18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M4 6L12 13L20 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="17" r="1.5" fill="currentColor" class="group-hover:animate-pulse"/>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-bold tracking-tight text-white group-hover:text-indigo-100 transition-colors">
+                        Medida<span class="text-indigo-400">Tek</span>
+                    </span>
+                </a>
                 <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
                 <div class="hidden sm:flex items-center gap-6 text-xs font-medium text-white/70">
                     <a href="#metodo" class="hover:text-white transition-colors">Método</a>

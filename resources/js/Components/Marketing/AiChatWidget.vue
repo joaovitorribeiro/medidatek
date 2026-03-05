@@ -284,7 +284,7 @@ onBeforeUnmount(() => {
             <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                 <div class="min-w-0">
                     <div class="truncate text-sm font-semibold">MedidaTek IA</div>
-                    <div class="truncate text-xs text-white/60">Pré-vendas e recomendação</div>
+                    <div class="truncate text-xs text-white/60">Guia Especialista</div>
                 </div>
                 <button
                     type="button"
