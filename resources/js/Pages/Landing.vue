@@ -282,7 +282,7 @@ function submit() {
                 </h1>
 
                 <p class="animate-on-scroll delay-300 mt-8 max-w-xl text-lg text-white/60 leading-relaxed font-light">
-                   Tecnologia sob medida para crescer.
+                   Tecnologia sob medida para o seu negócio.
                 </p>
 
                 <div class="animate-on-scroll delay-400 mt-10 flex flex-col sm:flex-row items-center gap-4">
@@ -305,10 +305,7 @@ function submit() {
                         <span
                             v-for="tech in integrationList"
                             :key="tech"
-                            class="font-bold px-8 uppercase tracking-widest transition-colors cursor-default"
-                            :class="isFeaturedIntegration(tech)
-                                ? 'text-3xl text-white/60 drop-shadow-[0_0_18px_rgba(16,185,129,0.18)] hover:text-white/80'
-                                : 'text-2xl text-white/15 hover:text-white/30'"
+                            class="font-bold px-8 uppercase tracking-widest transition-colors cursor-default text-2xl text-white/20 hover:text-white/40"
                         >
                             {{ tech }}
                         </span>
@@ -316,10 +313,7 @@ function submit() {
                         <span
                             v-for="tech in integrationList"
                             :key="`dup-${tech}`"
-                            class="font-bold px-8 uppercase tracking-widest transition-colors cursor-default"
-                            :class="isFeaturedIntegration(tech)
-                                ? 'text-3xl text-white/60 drop-shadow-[0_0_18px_rgba(16,185,129,0.18)] hover:text-white/80'
-                                : 'text-2xl text-white/15 hover:text-white/30'"
+                            class="font-bold px-8 uppercase tracking-widest transition-colors cursor-default text-2xl text-white/20 hover:text-white/40"
                         >
                             {{ tech }}
                         </span>
