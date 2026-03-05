@@ -293,7 +293,7 @@ function submit() {
                         </svg>
                     </a>
                     <a href="#projetos" class="text-sm font-medium text-white/70 hover:text-white transition-colors px-6 py-3">
-                        Ver galeria
+                        Ver projetos
                     </a>
                 </div>
             </section>
