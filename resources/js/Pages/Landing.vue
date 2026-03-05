@@ -319,88 +319,146 @@ function submit() {
                     <p class="mt-4 text-white/60 max-w-2xl text-lg">Execução com processo. Clareza de escopo. Entrega com padrão de engenharia.</p>
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-4">
-                    <div class="animate-on-scroll method-step-card method-step-1 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
-                        <div class="method-step-bg absolute inset-0"></div>
-                        <div class="method-step-noise absolute inset-0"></div>
-                        <div class="relative">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
-                                    <span class="opacity-80">01</span>
-                                    <span class="text-white/60">Diagnóstico</span>
+                <div class="grid gap-6 md:grid-cols-4">
+                    <!-- 01 Diagnóstico -->
+                    <div class="animate-on-scroll method-step-card method-step-1 group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 backdrop-blur-xl transition-all duration-500 hover:bg-zinc-900/60">
+                        <div class="method-step-bg absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40"></div>
+                        <div class="method-step-glow absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                        <div class="relative z-10 flex h-full flex-col justify-between">
+                            <div class="mb-6 flex items-start justify-between">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-300 backdrop-blur-md">
+                                    <span>01</span>
+                                    <span class="text-white/40">|</span>
+                                    <span class="text-white/70">Diagnóstico</span>
                                 </div>
-                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3h2a2 2 0 012 2v2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2H7a2 2 0 01-2-2v-6a2 2 0 012-2h2V5a2 2 0 012-2z"/></svg>
+                                <!-- Tech Visual: Scanner Radar -->
+                                <div class="relative flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/20">
+                                    <div class="absolute inset-0 animate-[spin_4s_linear_infinite] rounded-xl bg-gradient-to-tr from-transparent via-indigo-500/10 to-transparent"></div>
+                                    <svg class="h-6 w-6 text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="mt-5 text-xl font-semibold text-white">Identificação de gargalos</div>
-                            <div class="mt-2 text-sm text-white/60">Mapeamos processos, dados e riscos que limitam a escala. Entregamos um diagnóstico claro para orientar decisões de arquitetura e priorização de melhorias.</div>
-                            <div class="mt-5 flex flex-wrap gap-2">
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Processo</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Risco</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Arquitetura</span>
+                            
+                            <div>
+                                <h3 class="text-xl font-bold leading-tight text-white group-hover:text-indigo-200 transition-colors">Identificação de gargalos</h3>
+                                <p class="mt-3 text-sm leading-relaxed text-white/60">
+                                    Mapeamos processos, dados e riscos que limitam a escala. Entregamos um diagnóstico claro para orientar decisões de arquitetura.
+                                </p>
+                            </div>
+
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-indigo-200/70 transition-colors group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 group-hover:text-indigo-200">Processo</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-indigo-200/70 transition-colors group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 group-hover:text-indigo-200">Risco</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-indigo-200/70 transition-colors group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10 group-hover:text-indigo-200">Arquitetura</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="animate-on-scroll method-step-card method-step-2 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
-                        <div class="method-step-bg absolute inset-0"></div>
-                        <div class="method-step-noise absolute inset-0"></div>
-                        <div class="relative">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
-                                    <span class="opacity-80">02</span>
-                                    <span class="text-white/60">Design & UX</span>
+                    <!-- 02 Design & UX -->
+                    <div class="animate-on-scroll method-step-card method-step-2 group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 backdrop-blur-xl transition-all duration-500 hover:bg-zinc-900/60 delay-100">
+                        <div class="method-step-bg absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40"></div>
+                        <div class="method-step-glow absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                        <div class="relative z-10 flex h-full flex-col justify-between">
+                            <div class="mb-6 flex items-start justify-between">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300 backdrop-blur-md">
+                                    <span>02</span>
+                                    <span class="text-white/40">|</span>
+                                    <span class="text-white/70">Design & UX</span>
                                 </div>
-                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L8 18l-4 1 1-4 11.5-11.5z"/></svg>
+                                <!-- Tech Visual: Floating Layers -->
+                                <div class="relative flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 ring-1 ring-inset ring-cyan-500/20">
+                                    <div class="absolute h-6 w-6 rounded border border-cyan-400/30 opacity-60 animate-[float_4s_ease-in-out_infinite]"></div>
+                                    <div class="absolute h-6 w-6 rounded border border-cyan-400/50 opacity-80 animate-[float_4s_ease-in-out_infinite_1s] translate-x-1 translate-y-1"></div>
+                                    <svg class="relative z-10 h-5 w-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="mt-5 text-xl font-semibold text-white">Fluxos que convertem</div>
-                            <div class="mt-2 text-sm text-white/60">Projetamos interfaces e fluxos com foco em conversão e eficiência operacional. Cada decisão é validada com dados e testes de usabilidade para maximizar resultados.</div>
-                            <div class="mt-5 flex flex-wrap gap-2">
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">UX</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Conversão</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Eficiência</span>
+                            
+                            <div>
+                                <h3 class="text-xl font-bold leading-tight text-white group-hover:text-cyan-200 transition-colors">Fluxos que convertem</h3>
+                                <p class="mt-3 text-sm leading-relaxed text-white/60">
+                                    Interfaces e fluxos focados em conversão. Cada decisão é validada com dados e testes de usabilidade para maximizar resultados.
+                                </p>
+                            </div>
+
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-cyan-200/70 transition-colors group-hover:border-cyan-500/30 group-hover:bg-cyan-500/10 group-hover:text-cyan-200">UX</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-cyan-200/70 transition-colors group-hover:border-cyan-500/30 group-hover:bg-cyan-500/10 group-hover:text-cyan-200">Conversão</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-cyan-200/70 transition-colors group-hover:border-cyan-500/30 group-hover:bg-cyan-500/10 group-hover:text-cyan-200">Eficiência</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="animate-on-scroll method-step-card method-step-3 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
-                        <div class="method-step-bg absolute inset-0"></div>
-                        <div class="method-step-noise absolute inset-0"></div>
-                        <div class="relative">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
-                                    <span class="opacity-80">03</span>
-                                    <span class="text-white/60">Build</span>
+                    <!-- 03 Build -->
+                    <div class="animate-on-scroll method-step-card method-step-3 group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 backdrop-blur-xl transition-all duration-500 hover:bg-zinc-900/60 delay-200">
+                        <div class="method-step-bg absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40"></div>
+                        <div class="method-step-glow absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                        <div class="relative z-10 flex h-full flex-col justify-between">
+                            <div class="mb-6 flex items-start justify-between">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md">
+                                    <span>03</span>
+                                    <span class="text-white/40">|</span>
+                                    <span class="text-white/70">Build</span>
                                 </div>
-                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.7 6.3l3 3M4 20l4-1 10.3-10.3a2.121 2.121 0 00-3-3L5 15l-1 5z"/></svg>
+                                <!-- Tech Visual: Code Blocks -->
+                                <div class="relative flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 ring-1 ring-inset ring-emerald-500/20">
+                                    <div class="absolute inset-0 flex items-center justify-center opacity-30">
+                                        <div class="h-8 w-8 rounded border border-dashed border-emerald-400 animate-[spin_10s_linear_infinite]"></div>
+                                    </div>
+                                    <svg class="h-6 w-6 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="mt-5 text-xl font-semibold text-white">Entrega incremental</div>
-                            <div class="mt-2 text-sm text-white/60">Desenvolvemos de forma incremental, priorizando testes críticos e performance como requisito. Cada entrega é validada antes de avançar para a próxima fase, garantindo qualidade consistente.</div>
-                            <div class="mt-5 flex flex-wrap gap-2">
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Performance</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Qualidade</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Testes</span>
+                            
+                            <div>
+                                <h3 class="text-xl font-bold leading-tight text-white group-hover:text-emerald-200 transition-colors">Entrega incremental</h3>
+                                <p class="mt-3 text-sm leading-relaxed text-white/60">
+                                    Desenvolvimento incremental, priorizando testes críticos e performance. Cada entrega é validada antes de avançar.
+                                </p>
+                            </div>
+
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-emerald-200/70 transition-colors group-hover:border-emerald-500/30 group-hover:bg-emerald-500/10 group-hover:text-emerald-200">Performance</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-emerald-200/70 transition-colors group-hover:border-emerald-500/30 group-hover:bg-emerald-500/10 group-hover:text-emerald-200">Qualidade</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-emerald-200/70 transition-colors group-hover:border-emerald-500/30 group-hover:bg-emerald-500/10 group-hover:text-emerald-200">Testes</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="animate-on-scroll method-step-card method-step-4 group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 p-7 backdrop-blur-md transition-all">
-                        <div class="method-step-bg absolute inset-0"></div>
-                        <div class="method-step-noise absolute inset-0"></div>
-                        <div class="relative">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-wider">
-                                    <span class="opacity-80">04</span>
-                                    <span class="text-white/60">Evolução</span>
+                    <!-- 04 Evolução -->
+                    <div class="animate-on-scroll method-step-card method-step-4 group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900/40 p-8 backdrop-blur-xl transition-all duration-500 hover:bg-zinc-900/60 delay-300">
+                        <div class="method-step-bg absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40"></div>
+                        <div class="method-step-glow absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                        <div class="relative z-10 flex h-full flex-col justify-between">
+                            <div class="mb-6 flex items-start justify-between">
+                                <div class="method-step-badge inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-purple-300 backdrop-blur-md">
+                                    <span>04</span>
+                                    <span class="text-white/40">|</span>
+                                    <span class="text-white/70">Evolução</span>
                                 </div>
-                                <svg class="method-step-icon h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 14l3-3 4 4 6-6"/></svg>
+                                <!-- Tech Visual: Infinity Loop / Graph -->
+                                <div class="relative flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 ring-1 ring-inset ring-purple-500/20">
+                                    <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent blur-[2px]"></div>
+                                    <svg class="h-6 w-6 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="mt-5 text-xl font-semibold text-white">Otimização contínua</div>
-                            <div class="mt-2 text-sm text-white/60">Monitoramos métricas estratégicas, analisamos dados e aplicamos melhorias incrementais. Automação e IA são usadas quando o impacto é comprovado, sempre com validação e testes.</div>
-                            <div class="mt-5 flex flex-wrap gap-2">
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Métricas</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">IA</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Performance</span>
-                                <span class="method-step-chip rounded-full border px-3 py-1 text-xs text-white/70">Impacto</span>
+                            
+                            <div>
+                                <h3 class="text-xl font-bold leading-tight text-white group-hover:text-purple-200 transition-colors">Otimização contínua</h3>
+                                <p class="mt-3 text-sm leading-relaxed text-white/60">
+                                    Monitoramos métricas, analisamos dados e aplicamos melhorias. Automação e IA usadas quando o impacto é comprovado.
+                                </p>
+                            </div>
+
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-purple-200/70 transition-colors group-hover:border-purple-500/30 group-hover:bg-purple-500/10 group-hover:text-purple-200">Métricas</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-purple-200/70 transition-colors group-hover:border-purple-500/30 group-hover:bg-purple-500/10 group-hover:text-purple-200">IA</span>
+                                <span class="rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-purple-200/70 transition-colors group-hover:border-purple-500/30 group-hover:bg-purple-500/10 group-hover:text-purple-200">Impacto</span>
                             </div>
                         </div>
                     </div>
@@ -953,6 +1011,20 @@ function submit() {
     background-position: 0% 40%;
     opacity: 0.95;
     animation: method-pan 10s ease-in-out infinite;
+}
+
+.method-step-glow {
+    background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(var(--m1), 0.08), transparent 40%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-spin,
+    .animate-pulse,
+    .animate-bounce {
+        animation: none !important;
+    }
 }
 
 .method-step-noise {
