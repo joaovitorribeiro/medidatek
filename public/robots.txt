@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /painel
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /profile
+Disallow: /entrar
+Disallow: /login
+Disallow: /esqueci-senha
+Disallow: /forgot-password
+Disallow: /redefinir-senha
+Disallow: /reset-password
+Disallow: /verificar-email
+Disallow: /verify-email
+Disallow: /confirmar-senha
+Disallow: /confirm-password
+
+Sitemap: /sitemap.xml

@@ -8,15 +8,21 @@ type LogRow = {
     endpoint: string;
     status: string;
     model: string | null;
+    prompt_tokens: number | null;
+    completion_tokens: number | null;
     total_tokens: number | null;
     latency_ms: number | null;
+    cost_brl: number | null;
 };
 
 defineProps<{
     lastLogs: LogRow[];
     byStatus: Array<{ status: string; count: number }>;
     byEndpoint: Array<{ endpoint: string; count: number }>;
+    usd_brl: number;
 }>();
+
+const currencyBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 4, maximumFractionDigits: 4 });
 </script>
 
 <template>
@@ -77,6 +83,7 @@ defineProps<{
                                         <th class="px-3 py-2">Status</th>
                                         <th class="px-3 py-2">Modelo</th>
                                         <th class="px-3 py-2">Tokens</th>
+                                        <th class="px-3 py-2">Custo</th>
                                         <th class="px-3 py-2">Latência</th>
                                     </tr>
                                 </thead>
@@ -109,6 +116,9 @@ defineProps<{
                                             {{ row.total_tokens ?? '-' }}
                                         </td>
                                         <td class="px-3 py-2 text-gray-700">
+                                            {{ row.cost_brl != null ? currencyBRL.format(row.cost_brl) : '-' }}
+                                        </td>
+                                        <td class="px-3 py-2 text-gray-700">
                                             {{ row.latency_ms != null ? `${row.latency_ms}ms` : '-' }}
                                         </td>
                                     </tr>
@@ -121,4 +131,3 @@ defineProps<{
         </div>
     </AuthenticatedLayout>
 </template>
-

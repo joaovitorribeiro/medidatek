@@ -41,13 +41,45 @@ class AiChatController extends Controller
                 'reply' => $this->stubReply($message),
                 'cta' => [
                     'type' => 'form',
-                    'label' => 'Solicitar orçamento',
+                    'label' => 'Vamos construir?',
                     'href' => '#contato',
                 ],
             ]);
         }
 
-        $system = 'Você é um assistente de pré-vendas da MedidaTeck. Responda em pt-BR, com objetividade, sem promessas inventadas. Faça 1 pergunta por vez quando necessário e direcione para o próximo passo.';
+        $system = implode("\n", [
+            'Você é o agente de pré-vendas da MedidaTek, com performance de vendedor consultivo top-tier.',
+            'Você só fala do que está ligado à MedidaTek e ao conteúdo do site. Não invente features, cases, números, certificações, parcerias ou garantias.',
+            'Responda em pt-BR, com clareza, segurança e foco em conversão ética.',
+            'Importante: não se apresente e não repita saudação (o widget já faz isso). Vá direto ao ponto.',
+            '',
+            'Objetivo principal:',
+            '- Qualificar o lead com poucas perguntas e recomendar o próximo passo (MVP vs versão 1.0 vs enterprise).',
+            '- Reduzir fricção e direcionar para o formulário de contato (#contato) quando houver fit.',
+            '',
+            'Conhecimento do site (use como verdade do que oferecemos):',
+            '- Proposta: tecnologia sob medida para crescer; método com execução + processo + clareza de escopo + padrão de engenharia.',
+            '- Método (etapas): Diagnóstico; Design & UX; Build; Evolução.',
+            '- Infraestrutura (pilares): Arquitetura Escalável; Velocidade Real (99/100 Google PSI); IA Nativa; Design System; Mobile-First Real (iOS & Android, PWA Ready); Segurança Enterprise (Blindado, LGPD, backups automáticos).',
+            '- O que criamos/integramos: site/landing, e-commerce/loja, marketplace, portal do cliente, área de membros, SaaS, app/PWA, pedidos, orçamentos/propostas, CRM/ERP, BI, WhatsApp, automações, APIs/webhooks, notificações.',
+            '- Pagamentos/checkout: PIX, cartão, boleto, assinaturas, split; gateways como STRIPE, MERCADO PAGO, ASAAS, PAGSEGURO, IUGU, PAYPAL.',
+            '',
+            'Limites e segurança:',
+            '- Não peça nem aceite dados sensíveis (senhas, chaves, tokens, dados bancários, documentos pessoais).',
+            '- Se o usuário pedir algo fora do escopo do site, redirecione educadamente para o que a MedidaTek entrega.',
+            '- Em temas regulatórios (fintech), não dê aconselhamento jurídico/contábil; foque em arquitetura e produto.',
+            '',
+            'Técnica de vendas (aplique sem citar nomes):',
+            '- Comece validando e enquadrando o objetivo do usuário (1 frase).',
+            '- Em seguida, dê 2–3 opções objetivas (ex.: MVP vs V1 vs enterprise) conectadas ao que temos na página.',
+            '- Faça 1 pergunta de alta alavancagem por vez (dor, volume, integrações, prazo, faixa de investimento).',
+            '- Use linguagem de benefício (resultado) e prova de processo (método/infra), não hype.',
+            '- Quando houver fit (o usuário descreveu o objetivo ou pediu solução/preço/integrações), convide para clicar em "Vamos construir?" e preencher o formulário para orçamento.',
+            '',
+            'Formato:',
+            '- 3–7 linhas no máximo.',
+            '- Termine sempre com 1 pergunta específica.',
+        ]);
         $user = $message;
 
         $payload = [
@@ -57,7 +89,7 @@ class AiChatController extends Controller
                 ['role' => 'user', 'content' => $this->decorateWithContext($user, $context)],
             ],
             'temperature' => 0.4,
-            'max_tokens' => 250,
+            'max_tokens' => 300,
         ];
 
         try {
@@ -85,7 +117,7 @@ class AiChatController extends Controller
                     'reply' => $this->stubReply($message),
                     'cta' => [
                         'type' => 'form',
-                        'label' => 'Solicitar orçamento',
+                        'label' => 'Vamos construir?',
                         'href' => '#contato',
                     ],
                 ], 200);
@@ -94,6 +126,7 @@ class AiChatController extends Controller
             $json = $resp->json();
             $reply = (string) data_get($json, 'choices.0.message.content', '');
             $usage = (array) data_get($json, 'usage', []);
+            $costUsd = $this->calculateUsdCostFromUsage($usage);
 
             AiAuditLog::create([
                 'endpoint' => 'ai.chat',
@@ -104,6 +137,7 @@ class AiChatController extends Controller
                 'total_tokens' => Arr::get($usage, 'total_tokens'),
                 'latency_ms' => $latencyMs,
                 'status' => 'ok',
+                'cost_usd' => $costUsd,
                 'meta' => [
                     'context' => $context,
                 ],
@@ -113,7 +147,7 @@ class AiChatController extends Controller
                 'reply' => $reply !== '' ? $reply : $this->stubReply($message),
                 'cta' => [
                     'type' => 'form',
-                    'label' => 'Solicitar orçamento',
+                    'label' => 'Vamos construir?',
                     'href' => '#contato',
                 ],
             ]);
@@ -134,11 +168,26 @@ class AiChatController extends Controller
                 'reply' => $this->stubReply($message),
                 'cta' => [
                     'type' => 'form',
-                    'label' => 'Solicitar orçamento',
+                    'label' => 'Vamos construir?',
                     'href' => '#contato',
                 ],
             ]);
         }
+    }
+
+    private function calculateUsdCostFromUsage(array $usage): ?float
+    {
+        $promptTokens = (int) (Arr::get($usage, 'prompt_tokens') ?? 0);
+        $completionTokens = (int) (Arr::get($usage, 'completion_tokens') ?? 0);
+        if ($promptTokens <= 0 && $completionTokens <= 0) {
+            return null;
+        }
+
+        $inputUsdPerToken = ((float) config('ai.pricing.input_usd_per_million', 0.15)) / 1_000_000;
+        $outputUsdPerToken = ((float) config('ai.pricing.output_usd_per_million', 0.60)) / 1_000_000;
+
+        $cost = ($promptTokens * $inputUsdPerToken) + ($completionTokens * $outputUsdPerToken);
+        return round($cost, 6);
     }
 
     private function decorateWithContext(string $message, array $context): string

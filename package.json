@@ -21,5 +21,9 @@
         "vite": "^7.0.7",
         "vue": "^3.4.0",
         "vue-tsc": "^2.0.24"
+    },
+    "dependencies": {
+        "@tsparticles/slim": "^3.9.1",
+        "@tsparticles/vue3": "^3.0.1"
     }
 }
