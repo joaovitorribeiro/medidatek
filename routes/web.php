@@ -50,10 +50,19 @@ Route::get('/', function () {
             ->orderBy('sort_order')
             ->orderByDesc('id')
             ->limit(12)
-            ->get(['name', 'url', 'tag', 'note'])
+            ->get(['name', 'url', 'image_url', 'image_alt', 'tag', 'note'])
             ->map(fn (Project $p) => [
                 'name' => $p->name,
                 'url' => $p->url,
+                'image_url' => $p->image_url,
+                'image_src' => $p->image_url
+                    ? (Str::startsWith($p->image_url, ['http://', 'https://'])
+                        ? $p->image_url
+                        : (Str::startsWith($p->image_url, 'projects/')
+                            ? route('media.projects', ['filename' => basename($p->image_url)], absolute: false)
+                            : Storage::disk('public')->url($p->image_url)))
+                    : null,
+                'image_alt' => $p->image_alt,
                 'tag' => $p->tag,
                 'note' => $p->note,
                 ])
@@ -87,6 +96,28 @@ $serveLandingBento = function (string $filename) {
 
 Route::get('/midia/landing/bento/{filename}', $serveLandingBento)->name('media.landing.bento');
 Route::get('/storage/landing/bento/{filename}', $serveLandingBento);
+
+$serveProjectImage = function (string $filename) {
+    if (!preg_match('/^[A-Za-z0-9._-]+$/', $filename)) {
+        abort(404);
+    }
+
+    $relative = 'projects/'.$filename;
+    if (!Storage::disk('public')->exists($relative)) {
+        abort(404);
+    }
+
+    $fullPath = Storage::disk('public')->path($relative);
+    $mime = Storage::disk('public')->mimeType($relative) ?: 'application/octet-stream';
+
+    return response()->file($fullPath, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=31536000, immutable',
+    ]);
+};
+
+Route::get('/midia/projetos/{filename}', $serveProjectImage)->name('media.projects');
+Route::get('/storage/projects/{filename}', $serveProjectImage);
 
 Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
 

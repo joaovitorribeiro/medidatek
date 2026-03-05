@@ -9,6 +9,8 @@ class Project extends Model
     protected $fillable = [
         'name',
         'url',
+        'image_url',
+        'image_alt',
         'tag',
         'note',
         'sort_order',

@@ -6,6 +6,7 @@ type ProjectRow = {
     id: number;
     name: string;
     url: string;
+    image_src: string | null;
     tag: string | null;
     note: string | null;
     sort_order: number;
@@ -51,6 +52,7 @@ function destroy(id: number) {
                                 <thead class="text-xs uppercase text-gray-500">
                                     <tr>
                                         <th class="px-3 py-2">Ordem</th>
+                                        <th class="px-3 py-2">Imagem</th>
                                         <th class="px-3 py-2">Projeto</th>
                                         <th class="px-3 py-2">Tag</th>
                                         <th class="px-3 py-2">Status</th>
@@ -61,6 +63,17 @@ function destroy(id: number) {
                                     <tr v-for="row in projects" :key="row.id">
                                         <td class="px-3 py-2 text-gray-700">
                                             {{ row.sort_order }}
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <div class="h-12 w-20 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                                                <img
+                                                    v-if="row.image_src"
+                                                    :src="row.image_src"
+                                                    :alt="row.name"
+                                                    class="h-12 w-20 object-cover"
+                                                    loading="lazy"
+                                                />
+                                            </div>
                                         </td>
                                         <td class="px-3 py-2">
                                             <div class="font-semibold text-gray-900">

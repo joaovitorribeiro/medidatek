@@ -6,6 +6,8 @@ import AiChatWidget from '@/Components/Marketing/AiChatWidget.vue';
 type ProofLink = {
     name: string;
     url: string;
+    image_src?: string | null;
+    image_alt?: string | null;
     tag?: string;
     note?: string;
 };
@@ -358,11 +360,30 @@ function submit() {
                             :href="item.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/20 transition-all"
+                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/35 hover:shadow-2xl hover:shadow-indigo-500/20 transition-all hover:-translate-y-1"
                         >
-                            <div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"></div>
+                            <div class="absolute inset-0 z-0">
+                                <img
+                                    v-if="item.image_src"
+                                    :src="item.image_src"
+                                    :alt="item.image_alt || item.name"
+                                    class="w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                                    loading="lazy"
+                                />
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
+                                    :class="item.image_src ? 'opacity-10' : ''"
+                                ></div>
+                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
+                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
+                                <div
+                                    v-if="item.image_src"
+                                    class="absolute inset-0 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
+                                    style="background: radial-gradient(120% 100% at 50% 0%, rgba(99,102,241,0.22) 0%, rgba(255,255,255,0.08) 35%, rgba(0,0,0,0) 70%);"
+                                ></div>
+                            </div>
 
-                            <div class="absolute inset-0 p-6 flex flex-col justify-between bg-gradient-to-t from-black/80 to-transparent">
+                            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-between bg-gradient-to-t from-black/65 to-transparent">
                                 <div class="flex justify-end">
                                     <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
                                         {{ item.tag }}
@@ -381,11 +402,30 @@ function submit() {
                             :href="item.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/20 transition-all"
+                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/35 hover:shadow-2xl hover:shadow-indigo-500/20 transition-all hover:-translate-y-1"
                         >
-                            <div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"></div>
+                            <div class="absolute inset-0 z-0">
+                                <img
+                                    v-if="item.image_src"
+                                    :src="item.image_src"
+                                    :alt="item.image_alt || item.name"
+                                    class="w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                                    loading="lazy"
+                                />
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
+                                    :class="item.image_src ? 'opacity-10' : ''"
+                                ></div>
+                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
+                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
+                                <div
+                                    v-if="item.image_src"
+                                    class="absolute inset-0 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
+                                    style="background: radial-gradient(120% 100% at 50% 0%, rgba(99,102,241,0.22) 0%, rgba(255,255,255,0.08) 35%, rgba(0,0,0,0) 70%);"
+                                ></div>
+                            </div>
 
-                            <div class="absolute inset-0 p-6 flex flex-col justify-between bg-gradient-to-t from-black/80 to-transparent">
+                            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-between bg-gradient-to-t from-black/65 to-transparent">
                                 <div class="flex justify-end">
                                     <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
                                         {{ item.tag }}
