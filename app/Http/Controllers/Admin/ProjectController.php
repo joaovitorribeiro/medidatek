@@ -74,7 +74,7 @@ class ProjectController extends Controller
             'note' => ['nullable', 'string', 'max:280'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_published' => ['nullable', 'boolean'],
-        ]);
+        ], $this->projectValidationMessages());
 
         $desiredOrder = (int) ($data['sort_order'] ?? 0);
         $data['is_published'] = (bool) ($data['is_published'] ?? true);
@@ -149,7 +149,7 @@ class ProjectController extends Controller
             'note' => ['nullable', 'string', 'max:280'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_published' => ['nullable', 'boolean'],
-        ]);
+        ], $this->projectValidationMessages());
 
         $desiredOrder = (int) ($data['sort_order'] ?? 0);
         $data['is_published'] = (bool) ($data['is_published'] ?? false);
@@ -501,5 +501,15 @@ class ProjectController extends Controller
 
         imagedestroy($image);
         return $flipped;
+    }
+
+    private function projectValidationMessages(): array
+    {
+        return [
+            'image.uploaded' => 'Falha no upload da imagem. O servidor recusou o arquivo; tente uma imagem menor ou aumente os limites upload_max_filesize/post_max_size.',
+            'image.image' => 'Envie um arquivo de imagem válido.',
+            'image.mimes' => 'A imagem deve estar em JPG, PNG ou WebP.',
+            'image.max' => 'A imagem deve ter no máximo 5 MB.',
+        ];
     }
 }
