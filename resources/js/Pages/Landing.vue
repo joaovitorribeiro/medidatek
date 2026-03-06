@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
-import AiChatWidget from '@/Components/Marketing/AiChatWidget.vue';
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue';
 import FuturisticBackground from '@/Components/Marketing/FuturisticBackground.vue';
 
 type ProofLink = {
@@ -26,6 +25,8 @@ const props = defineProps<{
 const sentOnce = ref(false);
 const step = ref<1 | 2 | 3 | 4>(1);
 const year = new Date().getFullYear();
+const isPerformanceMode = ref(false);
+const showChatWidget = ref(false);
 const clientErrors = ref<Record<string, string>>({});
 const calcMode = ref<'vendas' | 'processos'>('vendas');
 const calcLeads = ref(300);
@@ -109,6 +110,10 @@ const form = useForm({
     referrer: '',
 });
 
+const AiChatWidget = defineAsyncComponent(() => import('@/Components/Marketing/AiChatWidget.vue'));
+
+let revealObserver: IntersectionObserver | null = null;
+
 onMounted(() => {
     // UTMs e Tracking
     const params = new URLSearchParams(window.location.search);
@@ -118,29 +123,49 @@ onMounted(() => {
     form.landing_path = window.location.pathname;
     form.referrer = document.referrer ?? '';
 
-    // Scroll & Reveal Animations
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
-    if (!reduceMotion) {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                for (const entry of entries) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('in-view');
-                        observer.unobserve(entry.target);
-                    }
-                }
-            },
-            { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-        );
-        document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
+    const isMobileViewport = window.matchMedia?.('(max-width: 1024px)')?.matches ?? false;
+    const saveData = (navigator as any)?.connection?.saveData === true;
+    const lowCpu = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+    const lowMemory = typeof (navigator as any)?.deviceMemory === 'number' && (navigator as any).deviceMemory <= 4;
+    isPerformanceMode.value = reduceMotion || isMobileViewport || saveData || lowCpu || lowMemory;
 
-        // Magnetic & Spotlight Effects
-        document.addEventListener('mousemove', (e) => {
-            const x = e.clientX;
-            const y = e.clientY;
-            document.documentElement.style.setProperty('--mouse-x', `${x}px`);
-            document.documentElement.style.setProperty('--mouse-y', `${y}px`);
-        });
+    const mountChatWidget = () => {
+        showChatWidget.value = true;
+    };
+    const idleCallback = (window as any).requestIdleCallback as ((callback: () => void, options?: { timeout: number }) => number) | undefined;
+    if (typeof idleCallback === 'function') {
+        idleCallback(mountChatWidget, { timeout: 2000 });
+    } else {
+        setTimeout(mountChatWidget, 350);
+    }
+
+    // Scroll & Reveal Animations
+    const revealEls = Array.from(document.querySelectorAll('.animate-on-scroll'));
+    if (isPerformanceMode.value || !('IntersectionObserver' in window)) {
+        revealEls.forEach((el) => el.classList.add('in-view'));
+        return;
+    }
+
+    revealObserver = new IntersectionObserver(
+        (entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    revealObserver?.unobserve(entry.target);
+                }
+            }
+        },
+        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+    );
+
+    revealEls.forEach((el) => revealObserver?.observe(el));
+});
+
+onBeforeUnmount(() => {
+    if (revealObserver) {
+        revealObserver.disconnect();
+        revealObserver = null;
     }
 });
 
@@ -218,10 +243,13 @@ function submit() {
         <script type="application/ld+json">{{ jsonLd }}</script>
     </Head>
 
-    <div class="landing-universe min-h-screen bg-[#030305] text-white selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div
+        class="landing-universe min-h-screen bg-[#030305] text-white selection:bg-indigo-500/30 selection:text-indigo-200"
+        :class="{ 'performance-mode': isPerformanceMode }"
+    >
         <!-- Aurora Background -->
         <div class="aurora-bg fixed inset-0 z-0 pointer-events-none">
-            <FuturisticBackground />
+            <FuturisticBackground v-if="!isPerformanceMode" />
             <div class="future-grid"></div>
             <div class="future-dots"></div>
             <div class="future-scan"></div>
@@ -299,7 +327,7 @@ function submit() {
             </section>
 
             <!-- Marquee Infinito -->
-            <section class="py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm">
+            <section class="perf-section py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm">
                 <div class="marquee-container">
                     <div class="marquee-content">
                         <span
@@ -321,7 +349,7 @@ function submit() {
                 </div>
             </section>
 
-            <section id="metodo" class="py-32 px-4 max-w-7xl mx-auto">
+            <section id="metodo" class="perf-section py-32 px-4 max-w-7xl mx-auto">
                 <div class="mb-12">
                     <h2 class="mt-6 text-4xl md:text-5xl font-medium tracking-tight">Método</h2>
                     <p class="mt-4 text-white/60 max-w-2xl text-lg">Execução com processo. Clareza de escopo. Entrega com padrão de engenharia.</p>
@@ -473,7 +501,7 @@ function submit() {
                 </div>
             </section>
 
-            <section id="infraestrutura" class="py-28 px-4 max-w-7xl mx-auto">
+            <section id="infraestrutura" class="perf-section py-28 px-4 max-w-7xl mx-auto">
                 <div class="mb-12">
                     <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Infraestrutura</h2>
                     <p class="mt-4 text-white/60 max-w-2xl text-lg">A base que sustenta o sistema: arquitetura, performance, IA, design, mobile e segurança.</p>
@@ -482,7 +510,7 @@ function submit() {
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
                     <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('architecture').src" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                            <img :src="bentoImage('architecture').src" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-end p-8">
@@ -496,7 +524,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('speed').src" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                            <img :src="bentoImage('speed').src" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8">
@@ -512,7 +540,7 @@ function submit() {
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('ai').src" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                            <img :src="bentoImage('ai').src" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -528,7 +556,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                             <img :src="bentoImage('design').src" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                             <img :src="bentoImage('design').src" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -546,7 +574,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
-                        <img :src="bentoImage('mobile').src" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                        <img :src="bentoImage('mobile').src" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                         
                         <div class="relative z-20 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
@@ -566,7 +594,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('security').src" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
+                            <img :src="bentoImage('security').src" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-l from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8 text-right items-end">
@@ -581,7 +609,7 @@ function submit() {
             </section>
 
             <!-- Galeria de Projetos Horizontal -->
-            <section v-if="hasProofLinks" id="projetos" class="py-20 overflow-hidden">
+            <section v-if="hasProofLinks" id="projetos" class="perf-section py-20 overflow-hidden">
                 <div class="px-4 max-w-7xl mx-auto mb-10 flex justify-between items-end">
                     <h2 class="text-3xl font-medium">Projetos recentes</h2>   
                 </div>
@@ -603,6 +631,7 @@ function submit() {
                                     :alt="item.image_alt || item.name"
                                     class="w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                                     loading="lazy"
+                                    decoding="async"
                                 />
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
@@ -645,6 +674,7 @@ function submit() {
                                     :alt="item.image_alt || item.name"
                                     class="w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                                     loading="lazy"
+                                    decoding="async"
                                 />
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
@@ -676,7 +706,7 @@ function submit() {
             </section>
 
             <!-- Interactive Calculator Section -->
-            <section id="impacto" class="py-32 px-4 max-w-5xl mx-auto">
+            <section id="impacto" class="perf-section py-32 px-4 max-w-5xl mx-auto">
                 <div class="animate-on-scroll text-center mb-16">
                     <h2 class="text-3xl md:text-5xl font-medium tracking-tight">ROI Calculável</h2>
                     <p class="mt-4 text-white/60">Simule o impacto financeiro da transformação digital.</p>
@@ -732,7 +762,7 @@ function submit() {
             </section>
 
             <!-- Contato / Wizard Style -->
-            <section id="contato" class="py-32 px-4 relative overflow-hidden">
+            <section id="contato" class="perf-section py-32 px-4 relative overflow-hidden">
                 <div class="max-w-2xl mx-auto relative z-10">
                     <div class="text-center mb-12">
                         <h2 class="text-4xl font-medium">Vamos construir?</h2>
@@ -861,7 +891,7 @@ function submit() {
             </div>
         </footer>
 
-        <AiChatWidget />
+        <AiChatWidget v-if="showChatWidget" />
     </div>
 </template>
 
@@ -870,6 +900,11 @@ function submit() {
 .landing-universe {
     background-color: #030305;
     overflow-x: hidden;
+}
+
+.perf-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 980px;
 }
 
 .aurora-bg {
@@ -980,6 +1015,8 @@ function submit() {
 .method-step-4 { --m1: 167, 139, 250; --m2: 99, 102, 241; }
 
 .method-step-card {
+    --mouse-x: 50%;
+    --mouse-y: 50%;
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 18px 60px rgba(0, 0, 0, 0.55);
     transform: translateZ(0);
     will-change: transform;
@@ -1025,6 +1062,61 @@ function submit() {
     background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(var(--m1), 0.08), transparent 40%);
     pointer-events: none;
     z-index: 1;
+}
+
+.performance-mode .future-dots,
+.performance-mode .future-scan,
+.performance-mode .noise-overlay {
+    display: none;
+}
+
+.performance-mode .future-grid,
+.performance-mode .aurora-orb,
+.performance-mode .method-step-bg,
+.performance-mode .method-step-card::after,
+.performance-mode .hero-title-gradient,
+.performance-mode .hero-title-strong::after,
+.performance-mode .marquee-content,
+.performance-mode .projects-marquee-track {
+    animation: none !important;
+}
+
+.performance-mode .aurora-orb {
+    opacity: 0.18;
+    filter: blur(40px);
+}
+
+.performance-mode .animate-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+}
+
+.performance-mode .futuristic-image {
+    filter: none;
+}
+
+.performance-mode .method-step-card,
+.performance-mode .method-step-card:hover {
+    transform: none;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.performance-mode .projects-marquee-container {
+    overflow-x: auto;
+    mask-image: none;
+}
+
+.performance-mode .projects-marquee-track {
+    padding-bottom: 0;
+}
+
+.performance-mode .glass-nav,
+.performance-mode .backdrop-blur-xl,
+.performance-mode .backdrop-blur-md,
+.performance-mode .backdrop-blur {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
