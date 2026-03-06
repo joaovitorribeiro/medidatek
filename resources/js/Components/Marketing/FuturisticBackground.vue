@@ -7,15 +7,27 @@ const prefersReducedMotion =
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
 
+const isLowEndDevice =
+    typeof window !== 'undefined' &&
+    (((navigator as any)?.connection?.saveData === true) ||
+        (typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4) ||
+        (typeof (navigator as any)?.deviceMemory === 'number' && (navigator as any).deviceMemory <= 4));
+
+const isMobileViewport =
+    typeof window !== 'undefined' && 'matchMedia' in window
+        ? window.matchMedia('(max-width: 1024px)').matches
+        : false;
 
 const options = computed<RecursivePartial<IOptions>>(() => ({
     fullScreen: { enable: false },
-    fpsLimit: prefersReducedMotion ? 30 : 60,
-    detectRetina: true,
+    fpsLimit: prefersReducedMotion ? 24 : isLowEndDevice || isMobileViewport ? 30 : 45,
+    detectRetina: !(isLowEndDevice || isMobileViewport),
+    pauseOnBlur: true,
+    pauseOnOutsideViewport: true,
     background: { color: { value: 'transparent' } },
     particles: {
         number: {
-            value: prefersReducedMotion ? 32 : 70,
+            value: prefersReducedMotion ? 18 : isLowEndDevice || isMobileViewport ? 24 : 42,
             density: { enable: true, area: 900 },
         },
         color: { value: ['#A5B4FC', '#22D3EE', '#34D399', '#A78BFA'] },
@@ -31,7 +43,7 @@ const options = computed<RecursivePartial<IOptions>>(() => ({
             animation: prefersReducedMotion ? { enable: false } : { enable: true, speed: 1, minimumValue: 1, sync: false },
         },
         links: {
-            enable: true,
+            enable: !(isLowEndDevice || isMobileViewport),
             distance: 140,
             color: '#93C5FD',
             opacity: 0.13,
@@ -39,7 +51,7 @@ const options = computed<RecursivePartial<IOptions>>(() => ({
         },
         move: {
             enable: true,
-            speed: prefersReducedMotion ? 0.35 : 0.75,
+            speed: prefersReducedMotion ? 0.2 : isLowEndDevice || isMobileViewport ? 0.35 : 0.55,
             direction: 'none',
             random: false,
             straight: false,
@@ -49,7 +61,7 @@ const options = computed<RecursivePartial<IOptions>>(() => ({
     interactivity: {
         detectsOn: 'window',
         events: {
-            onHover: { enable: !prefersReducedMotion, mode: 'grab' },
+            onHover: { enable: !prefersReducedMotion && !isLowEndDevice && !isMobileViewport, mode: 'grab' },
             resize: { enable: true },
         },
         modes: {
