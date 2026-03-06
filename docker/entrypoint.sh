@@ -29,12 +29,22 @@ REDIS_USERNAME_EFFECTIVE="${REDIS_USERNAME:-}"
 REDIS_PASSWORD_EFFECTIVE="${REDIS_PASSWORD:-}"
 REDIS_CLIENT_EFFECTIVE="${REDIS_CLIENT:-predis}"
 
-APP_URL_EFFECTIVE="$(printf '%s' "$APP_URL_EFFECTIVE" | tr -d '\r' | sed -e 's/^`//;s/`$//' -e 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+APP_URL_EFFECTIVE="$(printf '%s' "$APP_URL_EFFECTIVE" | tr -d '\r' | sed -e 's/^[[:space:]]*//;s/[[:space:]]*$//' -e 's/`//g')"
+export APP_URL="$APP_URL_EFFECTIVE"
 
 if [ "$REDIS_URL_EFFECTIVE" = "null" ]; then REDIS_URL_EFFECTIVE=""; fi
 if [ "$REDIS_HOST_EFFECTIVE" = "null" ]; then REDIS_HOST_EFFECTIVE=""; fi
 if [ "$REDIS_USERNAME_EFFECTIVE" = "null" ]; then REDIS_USERNAME_EFFECTIVE=""; fi
 if [ "$REDIS_PASSWORD_EFFECTIVE" = "null" ]; then REDIS_PASSWORD_EFFECTIVE=""; fi
+
+SESSION_COOKIE_EFFECTIVE="${SESSION_COOKIE:-}"
+SESSION_COOKIE_EFFECTIVE="$(printf '%s' "$SESSION_COOKIE_EFFECTIVE" | tr -d '\r' | sed -e 's/^[[:space:]]*//;s/[[:space:]]*$//' -e 's/`//g')"
+if [ "$SESSION_COOKIE_EFFECTIVE" = "null" ]; then SESSION_COOKIE_EFFECTIVE=""; fi
+if [ -z "$SESSION_COOKIE_EFFECTIVE" ]; then
+  SESSION_COOKIE_EFFECTIVE="$(php -r '$n=getenv("APP_NAME") ?: "laravel"; $n=strtolower($n); $n=preg_replace("/[^a-z0-9]+/","_",$n); $n=trim($n,"_"); if($n==="") $n="laravel"; echo $n."_session";')"
+fi
+
+export SESSION_COOKIE="$SESSION_COOKIE_EFFECTIVE"
 
 if [ "$APP_ENV_EFFECTIVE" = "production" ] && [ "$REDIS_CLIENT_EFFECTIVE" = "phpredis" ]; then
   if ! php -r 'exit(extension_loaded("redis") ? 0 : 1);'; then
@@ -81,6 +91,7 @@ DB_PASSWORD=${DB_PASSWORD:-${MYSQL_PASSWORD:-medidatek}}
 SESSION_DRIVER=${SESSION_DRIVER:-file}
 SESSION_LIFETIME=${SESSION_LIFETIME:-120}
 SESSION_ENCRYPT=${SESSION_ENCRYPT:-false}
+SESSION_COOKIE=${SESSION_COOKIE_EFFECTIVE}
 
 CACHE_STORE=${CACHE_STORE:-redis}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-redis}
