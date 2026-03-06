@@ -48,6 +48,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Admin/Projects/Index', [
             'projects' => $projects,
+            'can_manage_projects' => (bool) $request->user()?->is_admin,
         ]);
     }
 
