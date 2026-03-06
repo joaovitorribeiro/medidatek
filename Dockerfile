@@ -44,6 +44,7 @@ RUN apt-get update \
 COPY --from=composer-build /app /app
 COPY --from=node-build /app/public/build /app/public/build
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 
 RUN chmod +x /usr/local/bin/entrypoint \
