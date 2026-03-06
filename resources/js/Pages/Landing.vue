@@ -84,31 +84,13 @@ const integrationList = [
     'STRIPE', 'MERCADO PAGO', 'ASAAS', 'PAGSEGURO', 'IUGU', 'PAYPAL'
 ];
 
-const legacyUnsplashMap: Array<[string, string]> = [
-    ['photo-2JJ3wBHu4_0', 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80'],
-    ['photo-Ib2e4-Qy9mQ', 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80'],
-    ['photo-zips8ILZd04', 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80'],
-    ['photo-qaedPly-Uro', 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80'],
-    ['photo-BlWbfrQrI5k', 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80'],
-    ['photo-RMIsZlv8qv4', 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=1200&q=80'],
-];
-
-function remapLegacyImageUrl(url: string): string {
-    for (const [legacyFragment, replacementUrl] of legacyUnsplashMap) {
-        if (url.includes(legacyFragment)) {
-            return replacementUrl;
-        }
-    }
-    return url;
-}
-
 const bentoFallbacks: Record<BentoImageKey, string> = {
-    architecture: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
-    speed: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
-    ai: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-    design: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
-    mobile: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80',
-    security: 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=1200&q=80',
+    architecture: '/og/medidatek-og.png',
+    speed: '/og/medidatek-og.png',
+    ai: '/og/medidatek-og.png',
+    design: '/og/medidatek-og.png',
+    mobile: '/og/medidatek-og.png',
+    security: '/og/medidatek-og.png',
 };
 
 const featuredIntegrations = new Set(['Marketplace', 'Portal do cliente', 'Área de membros', 'SaaS sob medida']);
@@ -129,7 +111,7 @@ function normalizeImageSrc(src?: string | null): string | null {
     if (!value) {
         return null;
     }
-    const normalizedValue = remapLegacyImageUrl(value);
+    const normalizedValue = value;
 
     if (/^https?:\/\//i.test(normalizedValue)) {
         if (typeof window !== 'undefined' && window.location.protocol === 'https:' && normalizedValue.startsWith('http://')) {
@@ -171,7 +153,7 @@ function normalizeSrcset(srcset?: string | null): string | null {
 const proofLinks = computed(() =>
     (props.proofLinks ?? []).map((item) => ({
         ...item,
-        image_src: normalizeImageSrc(item.image_src ?? item.image_url ?? null),
+        image_src: normalizeImageSrc(item.image_src ?? null),
         image_srcset: normalizeSrcset(item.image_srcset ?? null),
         image_sizes: (item.image_sizes ?? '').trim() || null,
     })),

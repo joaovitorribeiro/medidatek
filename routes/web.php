@@ -110,13 +110,27 @@ $decodeBase64Url = function (string $value): ?string {
     return is_string($decoded) && $decoded !== '' ? $decoded : null;
 };
 
-$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix) use ($remapLegacyExternalImageUrl, $ensureUnsplashJpeg, $encodeBase64Url): ?string {
+$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, bool $allowExternal = true) use ($remapLegacyExternalImageUrl, $ensureUnsplashJpeg, $encodeBase64Url): ?string {
     $imageUrl = $imageUrl ? trim($imageUrl) : null;
     if (!$imageUrl) {
         return null;
     }
 
     if (Str::startsWith($imageUrl, ['http://', 'https://'])) {
+        if (!$allowExternal) {
+            $host = strtolower((string) parse_url($imageUrl, PHP_URL_HOST));
+            $path = (string) parse_url($imageUrl, PHP_URL_PATH);
+            $appHost = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+            $requestHost = strtolower((string) request()->getHost());
+
+            $isSameHost = $host !== '' && ($host === $requestHost || ($appHost !== '' && $host === $appHost));
+            if (!$isSameHost || $path === '') {
+                return null;
+            }
+
+            $imageUrl = $path;
+        }
+
         $imageUrl = $remapLegacyExternalImageUrl($imageUrl);
         $imageUrl = $ensureUnsplashJpeg($imageUrl);
         $host = strtolower(parse_url($imageUrl, PHP_URL_HOST) ?? '');
@@ -164,8 +178,8 @@ $buildMobileVariantPath = function (string $relativePath): string {
     return $directory.$filename.'-sm'.($extension ? '.'.$extension : '');
 };
 
-$resolveResponsiveImage = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, string $sizes = '100vw') use ($resolvePublicImageSrc, $extractRelativeStoragePath, $buildMobileVariantPath): array {
-    $src = $resolvePublicImageSrc($imageUrl, $mediaRouteName, $storagePrefix);
+$resolveResponsiveImage = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, string $sizes = '100vw', bool $allowExternal = true) use ($resolvePublicImageSrc, $extractRelativeStoragePath, $buildMobileVariantPath): array {
+    $src = $resolvePublicImageSrc($imageUrl, $mediaRouteName, $storagePrefix, $allowExternal);
     if (!$src) {
         return ['src' => null, 'srcset' => null, 'sizes' => null];
     }
@@ -195,21 +209,23 @@ Route::get('/', function () use ($resolveResponsiveImage) {
         'media.landing.bento',
         'landing/bento/',
         '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 1200px',
+        false,
     );
     $resolveProjectImage = fn (?string $imageUrl): array => $resolveResponsiveImage(
         $imageUrl,
         'media.projects',
         'projects/',
         '(max-width: 768px) 88vw, (max-width: 1280px) 420px, 420px',
+        false,
     );
 
     $bentoImages = collect([
-        'architecture' => ['src' => 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Arquitetura escalável'],
-        'speed' => ['src' => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Velocidade e performance'],
-        'ai' => ['src' => 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Inteligência artificial'],
-        'design' => ['src' => 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Design system'],
-        'mobile' => ['src' => 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Mobile-first'],
-        'security' => ['src' => 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Segurança e autenticação'],
+        'architecture' => ['src' => '/og/medidatek-og.png', 'alt' => 'Arquitetura escalável'],
+        'speed' => ['src' => '/og/medidatek-og.png', 'alt' => 'Velocidade e performance'],
+        'ai' => ['src' => '/og/medidatek-og.png', 'alt' => 'Inteligência artificial'],
+        'design' => ['src' => '/og/medidatek-og.png', 'alt' => 'Design system'],
+        'mobile' => ['src' => '/og/medidatek-og.png', 'alt' => 'Mobile-first'],
+        'security' => ['src' => '/og/medidatek-og.png', 'alt' => 'Segurança e autenticação'],
     ]);
 
     if (Schema::hasTable('landing_bento_cards')) {
