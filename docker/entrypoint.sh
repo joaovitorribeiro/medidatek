@@ -1,11 +1,16 @@
 #!/usr/bin/env sh
 set -e
+umask 0002
 
 cd /app
 
 mkdir -p \
   /app/storage/app \
   /app/storage/app/public \
+  /app/storage/app/public/landing \
+  /app/storage/app/public/landing/bento \
+  /app/storage/app/public/landing/uploads \
+  /app/storage/app/public/projects \
   /app/storage/framework/cache/data \
   /app/storage/framework/sessions \
   /app/storage/framework/views \
@@ -13,8 +18,60 @@ mkdir -p \
   /app/storage/logs \
   /app/bootstrap/cache
 
+migrate_media_dir() {
+  from_dir="${1%/}"
+  to_dir="${2%/}"
+
+  if [ ! -d "$from_dir" ]; then
+    return 0
+  fi
+
+  find "$from_dir" -type f | while IFS= read -r src_file; do
+    rel_path="${src_file#$from_dir/}"
+    target_file="$to_dir/$rel_path"
+    target_dir="$(dirname "$target_file")"
+    mkdir -p "$target_dir"
+
+    if [ ! -f "$target_file" ]; then
+      cp "$src_file" "$target_file"
+    fi
+  done
+}
+
+ensure_symlink() {
+  target_path="$1"
+  link_path="$2"
+  link_parent="$(dirname "$link_path")"
+
+  mkdir -p "$link_parent"
+
+  if [ -L "$link_path" ] || [ -e "$link_path" ]; then
+    rm -rf "$link_path"
+  fi
+
+  ln -s "$target_path" "$link_path"
+}
+
+# Migrate legacy media folders into canonical storage/app/public paths.
+migrate_media_dir /app/public/midia/landing/bento /app/storage/app/public/landing/bento
+migrate_media_dir /app/public/midia/projetos /app/storage/app/public/projects
+migrate_media_dir /app/public/midia/projects /app/storage/app/public/projects
+migrate_media_dir /app/storage/app/public/midia/landing/bento /app/storage/app/public/landing/bento
+migrate_media_dir /app/storage/app/public/midia/projetos /app/storage/app/public/projects
+migrate_media_dir /app/storage/app/public/midia/projects /app/storage/app/public/projects
+migrate_media_dir /app/storage/app/public/projetos /app/storage/app/public/projects
+
+# Keep legacy public URLs working while files stay canonical in storage.
+mkdir -p /app/public/midia /app/public/midia/landing
+ensure_symlink /app/storage/app/public/landing/bento /app/public/midia/landing/bento
+ensure_symlink /app/storage/app/public/landing/uploads /app/public/midia/landing/uploads
+ensure_symlink /app/storage/app/public/projects /app/public/midia/projetos
+ensure_symlink /app/storage/app/public/projects /app/public/midia/projects
+
 chown -R www-data:www-data /app/storage /app/bootstrap/cache
 chmod -R ug+rwX /app/storage /app/bootstrap/cache
+find /app/storage /app/bootstrap/cache -type d -exec chmod 2775 {} \;
+find /app/storage /app/bootstrap/cache -type f -exec chmod 664 {} \;
 
 APP_URL_EFFECTIVE="${APP_URL:-${COOLIFY_URL:-http://localhost}}"
 APP_NAME_EFFECTIVE="${APP_NAME:-MedidaTek}"
@@ -105,6 +162,11 @@ REDIS_PASSWORD=${REDIS_PASSWORD_EFFECTIVE}
 
 VITE_APP_NAME=${VITE_APP_NAME:-${APP_NAME_EFFECTIVE}}
 EOF
+
+if [ ! -L /app/public/storage ]; then
+  rm -rf /app/public/storage || true
+  php artisan storage:link --no-interaction || true
+fi
 
 if [ "${WAIT_FOR_REDIS:-1}" = "1" ]; then
   REDIS_URL="$REDIS_URL_EFFECTIVE" REDIS_HOST="$REDIS_HOST_EFFECTIVE" REDIS_PORT="${REDIS_PORT:-6379}" php -r '

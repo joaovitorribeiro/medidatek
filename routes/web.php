@@ -58,6 +58,68 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200)->header('Content-Type', 'application/xml; charset=UTF-8');
 })->name('sitemap');
 
+$resolveMediaFilePath = function (string $relativePath): ?string {
+    $relativePath = ltrim($relativePath, '/');
+
+    $relativeCandidates = [$relativePath];
+
+    if (Str::startsWith($relativePath, 'projects/')) {
+        $suffix = substr($relativePath, strlen('projects/'));
+        $relativeCandidates[] = 'projetos/'.$suffix;
+        $relativeCandidates[] = 'midia/projetos/'.$suffix;
+        $relativeCandidates[] = 'midia/projects/'.$suffix;
+    }
+
+    if (Str::startsWith($relativePath, 'landing/bento/')) {
+        $suffix = substr($relativePath, strlen('landing/bento/'));
+        $relativeCandidates[] = 'midia/landing/bento/'.$suffix;
+    }
+
+    foreach (array_unique($relativeCandidates) as $candidateRelativePath) {
+        if (!is_string($candidateRelativePath) || $candidateRelativePath === '') {
+            continue;
+        }
+
+        $candidates = [
+            Storage::disk('public')->path($candidateRelativePath),
+            public_path('storage/'.$candidateRelativePath),
+            public_path($candidateRelativePath),
+        ];
+
+        if (!Str::startsWith($candidateRelativePath, 'midia/')) {
+            $candidates[] = public_path('midia/'.$candidateRelativePath);
+        }
+
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && $candidate !== '' && is_file($candidate)) {
+                return $candidate;
+            }
+        }
+    }
+
+    return null;
+};
+
+$mediaFileExists = fn (string $relativePath): bool => $resolveMediaFilePath($relativePath) !== null;
+
+$detectImageMime = function (string $fullPath, string $fallbackName): string {
+    $mime = @mime_content_type($fullPath);
+    if (is_string($mime) && $mime !== '' && $mime !== 'application/octet-stream') {
+        return $mime;
+    }
+
+    $ext = strtolower(pathinfo($fallbackName, PATHINFO_EXTENSION));
+
+    return match ($ext) {
+        'jpg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'avif' => 'image/avif',
+        'gif' => 'image/gif',
+        default => 'application/octet-stream',
+    };
+};
+
 $legacyUnsplashMap = [
     'photo-2JJ3wBHu4_0' => 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
     'photo-Ib2e4-Qy9mQ' => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
@@ -110,7 +172,7 @@ $decodeBase64Url = function (string $value): ?string {
     return is_string($decoded) && $decoded !== '' ? $decoded : null;
 };
 
-$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, bool $allowExternal = true) use ($remapLegacyExternalImageUrl, $ensureUnsplashJpeg, $encodeBase64Url): ?string {
+$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, bool $allowExternal = true) use ($remapLegacyExternalImageUrl, $ensureUnsplashJpeg, $encodeBase64Url, $mediaFileExists): ?string {
     $imageUrl = $imageUrl ? trim($imageUrl) : null;
     if (!$imageUrl) {
         return null;
@@ -142,12 +204,31 @@ $resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, st
     }
 
     if (Str::startsWith($imageUrl, ['/midia/', 'midia/'])) {
+        $path = (string) parse_url($imageUrl, PHP_URL_PATH);
+        $filename = basename($path !== '' ? $path : $imageUrl);
+        $relative = $storagePrefix.$filename;
+        if (!$mediaFileExists($relative)) {
+            return null;
+        }
+
         return '/'.ltrim($imageUrl, '/');
     }
 
     $normalized = ltrim($imageUrl, '/');
     if (Str::startsWith($normalized, [$storagePrefix, 'storage/'.$storagePrefix])) {
+        if (Str::startsWith($normalized, 'storage/'.$storagePrefix)) {
+            $normalized = substr($normalized, strlen('storage/'));
+        }
+
+        if (!$mediaFileExists($normalized)) {
+            return null;
+        }
+
         return route($mediaRouteName, ['filename' => basename($normalized)], absolute: false);
+    }
+
+    if (!$mediaFileExists($normalized)) {
+        return null;
     }
 
     return Storage::disk('public')->url($normalized);
@@ -178,7 +259,7 @@ $buildMobileVariantPath = function (string $relativePath): string {
     return $directory.$filename.'-sm'.($extension ? '.'.$extension : '');
 };
 
-$resolveResponsiveImage = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, string $sizes = '100vw', bool $allowExternal = true) use ($resolvePublicImageSrc, $extractRelativeStoragePath, $buildMobileVariantPath): array {
+$resolveResponsiveImage = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, string $sizes = '100vw', bool $allowExternal = true) use ($resolvePublicImageSrc, $extractRelativeStoragePath, $buildMobileVariantPath, $mediaFileExists): array {
     $src = $resolvePublicImageSrc($imageUrl, $mediaRouteName, $storagePrefix, $allowExternal);
     if (!$src) {
         return ['src' => null, 'srcset' => null, 'sizes' => null];
@@ -190,7 +271,7 @@ $resolveResponsiveImage = function (?string $imageUrl, string $mediaRouteName, s
     }
 
     $mobileVariant = $buildMobileVariantPath($relativePath);
-    if (!Storage::disk('public')->exists($mobileVariant)) {
+    if (!$mediaFileExists($mobileVariant)) {
         return ['src' => $src, 'srcset' => null, 'sizes' => null];
     }
 
@@ -279,27 +360,18 @@ Route::get('/', function () use ($resolveResponsiveImage) {
     ]);
 })->name('landing');
 
-$serveLandingBento = function (string $filename) {
+$serveLandingBento = function (string $filename) use ($resolveMediaFilePath, $detectImageMime) {
     if (!preg_match('/^[A-Za-z0-9._-]+$/', $filename)) {
         abort(404);
     }
 
     $relative = 'landing/bento/'.$filename;
-    if (!Storage::disk('public')->exists($relative)) {
+    $fullPath = $resolveMediaFilePath($relative);
+    if (!$fullPath) {
         abort(404);
     }
 
-    $fullPath = Storage::disk('public')->path($relative);
-    $mime = Storage::disk('public')->mimeType($relative);
-    if (!$mime || $mime === 'application/octet-stream') {
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        $mime = match ($ext) {
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'webp' => 'image/webp',
-            default => 'application/octet-stream',
-        };
-    }
+    $mime = $detectImageMime($fullPath, $filename);
 
     return response()->file($fullPath, [
         'Content-Type' => $mime,
@@ -311,27 +383,18 @@ $serveLandingBento = function (string $filename) {
 Route::get('/midia/landing/bento/{filename}', $serveLandingBento)->name('media.landing.bento');
 Route::get('/storage/landing/bento/{filename}', $serveLandingBento);
 
-$serveProjectImage = function (string $filename) {
+$serveProjectImage = function (string $filename) use ($resolveMediaFilePath, $detectImageMime) {
     if (!preg_match('/^[A-Za-z0-9._-]+$/', $filename)) {
         abort(404);
     }
 
     $relative = 'projects/'.$filename;
-    if (!Storage::disk('public')->exists($relative)) {
+    $fullPath = $resolveMediaFilePath($relative);
+    if (!$fullPath) {
         abort(404);
     }
 
-    $fullPath = Storage::disk('public')->path($relative);
-    $mime = Storage::disk('public')->mimeType($relative);
-    if (!$mime || $mime === 'application/octet-stream') {
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        $mime = match ($ext) {
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'webp' => 'image/webp',
-            default => 'application/octet-stream',
-        };
-    }
+    $mime = $detectImageMime($fullPath, $filename);
 
     return response()->file($fullPath, [
         'Content-Type' => $mime,
@@ -341,7 +404,9 @@ $serveProjectImage = function (string $filename) {
 };
 
 Route::get('/midia/projetos/{filename}', $serveProjectImage)->name('media.projects');
+Route::get('/midia/projects/{filename}', $serveProjectImage);
 Route::get('/storage/projects/{filename}', $serveProjectImage);
+Route::get('/storage/projetos/{filename}', $serveProjectImage);
 
 $serveRemoteImage = function (string $encoded) use ($decodeBase64Url, $remapLegacyExternalImageUrl, $ensureUnsplashJpeg) {
     if (!preg_match('/^[A-Za-z0-9\-_]+$/', $encoded)) {
