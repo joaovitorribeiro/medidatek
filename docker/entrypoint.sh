@@ -4,6 +4,8 @@ set -e
 cd /app
 
 mkdir -p \
+  /app/storage/app \
+  /app/storage/app/public \
   /app/storage/framework/cache/data \
   /app/storage/framework/sessions \
   /app/storage/framework/views \
@@ -12,6 +14,7 @@ mkdir -p \
   /app/bootstrap/cache
 
 chown -R www-data:www-data /app/storage /app/bootstrap/cache
+chmod -R ug+rwX /app/storage /app/bootstrap/cache
 
 APP_URL_EFFECTIVE="${APP_URL:-${COOLIFY_URL:-http://localhost}}"
 APP_NAME_EFFECTIVE="${APP_NAME:-MedidaTek}"
