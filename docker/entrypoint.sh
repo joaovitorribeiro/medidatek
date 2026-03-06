@@ -51,11 +51,61 @@ SESSION_DRIVER=${SESSION_DRIVER:-file}
 SESSION_LIFETIME=${SESSION_LIFETIME:-120}
 SESSION_ENCRYPT=${SESSION_ENCRYPT:-false}
 
-CACHE_STORE=${CACHE_STORE:-database}
-QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
+CACHE_STORE=${CACHE_STORE:-redis}
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-redis}
+
+REDIS_CLIENT=${REDIS_CLIENT:-phpredis}
+REDIS_URL=${REDIS_URL:-}
+REDIS_HOST=${REDIS_HOST:-}
+REDIS_PORT=${REDIS_PORT:-6379}
+REDIS_USERNAME=${REDIS_USERNAME:-}
+REDIS_PASSWORD=${REDIS_PASSWORD:-}
 
 VITE_APP_NAME=${VITE_APP_NAME:-${APP_NAME_EFFECTIVE}}
 EOF
+
+if [ "${WAIT_FOR_REDIS:-1}" = "1" ]; then
+  php -r '
+    if (!class_exists("Redis")) {
+      exit(0);
+    }
+    $url = getenv("REDIS_URL") ?: "";
+    $host = getenv("REDIS_HOST") ?: "";
+    $port = (int) (getenv("REDIS_PORT") ?: 6379);
+    $user = getenv("REDIS_USERNAME");
+    $pass = getenv("REDIS_PASSWORD");
+    if ($url !== "") {
+      $parts = parse_url($url);
+      if (is_array($parts)) {
+        if (!empty($parts["host"])) $host = $parts["host"];
+        if (!empty($parts["port"])) $port = (int) $parts["port"];
+        if (array_key_exists("user", $parts)) $user = $parts["user"];
+        if (array_key_exists("pass", $parts)) $pass = $parts["pass"];
+      }
+    }
+    if ($host === "") {
+      $host = "redis";
+    }
+    $tries = 60;
+    while ($tries-- > 0) {
+      try {
+        $r = new Redis();
+        $r->connect($host, $port, 1.5);
+        if ($user !== false && $user !== "" && $pass !== false && $pass !== "") {
+          $r->auth([$user, $pass]);
+        } elseif ($pass !== false && $pass !== "") {
+          $r->auth($pass);
+        }
+        $r->ping();
+        exit(0);
+      } catch (Throwable $e) {
+        usleep(500000);
+      }
+    }
+    fwrite(STDERR, "Redis not ready\n");
+    exit(1);
+  ';
+fi
 
 if [ "${WAIT_FOR_DB:-1}" = "1" ] && [ "${DB_CONNECTION:-mysql}" = "mysql" ]; then
   php -r '

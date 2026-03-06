@@ -20,6 +20,9 @@ WORKDIR /app
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+    autoconf \
+    g++ \
+    make \
     libicu-dev \
     libzip-dev \
     libpng-dev \
@@ -37,6 +40,8 @@ RUN apt-get update \
     pdo \
     pdo_mysql \
     zip \
+  && pecl install redis \
+  && docker-php-ext-enable redis \
   && a2enmod rewrite headers expires \
   && rm -rf /var/lib/apt/lists/*
 
