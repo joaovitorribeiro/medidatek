@@ -50,6 +50,9 @@ class LandingBentoImagesTest extends TestCase
         $this->assertStringStartsWith('landing/bento/', $card->image_url);
 
         Storage::disk('public')->assertExists($card->image_url);
+        $mobileVariant = preg_replace('/(\.[^.]+)$/', '-sm$1', $card->image_url ?? '');
+        $this->assertIsString($mobileVariant);
+        Storage::disk('public')->assertExists((string) $mobileVariant);
     }
 
     public function test_bento_image_can_be_served_from_media_route(): void

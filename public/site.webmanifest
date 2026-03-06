@@ -1,0 +1,21 @@
+{
+  "name": "MedidaTek",
+  "short_name": "MedidaTek",
+  "description": "Criacao de sistemas sob medida para automatizar processos e escalar operacoes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090e1e",
+  "theme_color": "#090e1e",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

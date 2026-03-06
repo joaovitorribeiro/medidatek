@@ -6,7 +6,10 @@ import FuturisticBackground from '@/Components/Marketing/FuturisticBackground.vu
 type ProofLink = {
     name: string;
     url: string;
+    image_url?: string | null;
     image_src?: string | null;
+    image_srcset?: string | null;
+    image_sizes?: string | null;
     image_alt?: string | null;
     tag?: string;
     note?: string;
@@ -14,6 +17,8 @@ type ProofLink = {
 
 type BentoImage = {
     src: string;
+    srcset?: string | null;
+    sizes?: string | null;
     alt: string;
 };
 
@@ -36,7 +41,9 @@ const calcHours = ref(120);
 const calcHourlyCost = ref(65);
 const siteOrigin = computed(() => (typeof window !== 'undefined' ? window.location.origin : ''));
 const canonicalUrl = computed(() => (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : ''));
-const ogImageUrl = computed(() => (siteOrigin.value ? `${siteOrigin.value}/og/medidatek.svg` : '/og/medidatek.svg'));
+const shareTitle = 'Sistema sob medida para sua operacao | MedidaTek';
+const shareDescription = 'Criamos sistemas sob medida para eliminar planilhas, automatizar processos e escalar seu negocio com mais controle.';
+const ogImageUrl = computed(() => (siteOrigin.value ? `${siteOrigin.value}/og/medidatek-og.png` : '/og/medidatek-og.png'));
 const jsonLd = computed(() =>
     JSON.stringify(
         {
@@ -47,11 +54,13 @@ const jsonLd = computed(() =>
                     name: 'MedidaTek',
                     url: siteOrigin.value || undefined,
                     logo: ogImageUrl.value,
+                    description: shareDescription,
                 },
                 {
                     '@type': 'WebSite',
                     name: 'MedidaTek',
                     url: siteOrigin.value || undefined,
+                    description: shareDescription,
                 },
             ],
         },
@@ -82,11 +91,86 @@ function proofHost(url: string) {
     }
 }
 
-const proofLinks = computed(() => props.proofLinks);
+function normalizeImageSrc(src?: string | null): string | null {
+    const value = (src ?? '').trim();
+    if (!value) {
+        return null;
+    }
+
+    if (/^https?:\/\//i.test(value)) {
+        if (typeof window !== 'undefined' && window.location.protocol === 'https:' && value.startsWith('http://')) {
+            return `https://${value.slice('http://'.length)}`;
+        }
+        return value;
+    }
+
+    if (value.startsWith('//')) {
+        return typeof window !== 'undefined' ? `${window.location.protocol}${value}` : value;
+    }
+
+    if (value.startsWith('/')) {
+        return value;
+    }
+
+    return `/${value.replace(/^\.?\//, '')}`;
+}
+
+function normalizeSrcset(srcset?: string | null): string | null {
+    const value = (srcset ?? '').trim();
+    if (!value) {
+        return null;
+    }
+
+    const parts = value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .map((entry) => {
+            const [rawUrl, ...descriptors] = entry.split(/\s+/);
+            const normalizedUrl = normalizeImageSrc(rawUrl) ?? rawUrl;
+            return [normalizedUrl, ...descriptors].join(' ');
+        });
+
+    return parts.length > 0 ? parts.join(', ') : null;
+}
+
+const proofLinks = computed(() =>
+    (props.proofLinks ?? []).map((item) => ({
+        ...item,
+        image_src: normalizeImageSrc(item.image_src ?? item.image_url ?? null),
+        image_srcset: normalizeSrcset(item.image_srcset ?? null),
+        image_sizes: (item.image_sizes ?? '').trim() || null,
+    })),
+);
+
 const hasProofLinks = computed(() => proofLinks.value.length > 0);
+const projectMarqueeLinks = computed(() =>
+    isPerformanceMode.value ? proofLinks.value : [...proofLinks.value, ...proofLinks.value],
+);
+
+function projectImageLoading(index: number): 'lazy' | 'eager' {
+    if (!isPerformanceMode.value) {
+        return 'lazy';
+    }
+    return index < 3 ? 'eager' : 'lazy';
+}
+
+function projectImageFetchPriority(index: number): 'high' | 'low' {
+    return index < 2 ? 'high' : 'low';
+}
 
 function bentoImage(key: string): BentoImage {
-    return props.bentoImages?.[key] ?? { src: '', alt: '' };
+    const image = props.bentoImages?.[key];
+    if (!image) {
+        return { src: '', alt: '' };
+    }
+
+    return {
+        src: normalizeImageSrc(image.src) ?? '',
+        srcset: normalizeSrcset(image.srcset ?? null),
+        sizes: (image.sizes ?? '').trim() || null,
+        alt: image.alt,
+    };
 }
 
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
@@ -113,6 +197,28 @@ const form = useForm({
 const AiChatWidget = defineAsyncComponent(() => import('@/Components/Marketing/AiChatWidget.vue'));
 
 let revealObserver: IntersectionObserver | null = null;
+let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function refreshPerformanceFlags() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
+    const mobileViewport = window.matchMedia?.('(max-width: 1024px)')?.matches ?? false;
+    const saveData = (navigator as any)?.connection?.saveData === true;
+    const lowCpu = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+    const lowMemory = typeof (navigator as any)?.deviceMemory === 'number' && (navigator as any).deviceMemory <= 4;
+
+    isPerformanceMode.value = reduceMotion || mobileViewport || saveData || lowCpu || lowMemory;
+}
+
+function handleResize() {
+    if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+    }
+    resizeTimeout = setTimeout(refreshPerformanceFlags, 120);
+}
 
 onMounted(() => {
     // UTMs e Tracking
@@ -123,12 +229,8 @@ onMounted(() => {
     form.landing_path = window.location.pathname;
     form.referrer = document.referrer ?? '';
 
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
-    const isMobileViewport = window.matchMedia?.('(max-width: 1024px)')?.matches ?? false;
-    const saveData = (navigator as any)?.connection?.saveData === true;
-    const lowCpu = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
-    const lowMemory = typeof (navigator as any)?.deviceMemory === 'number' && (navigator as any).deviceMemory <= 4;
-    isPerformanceMode.value = reduceMotion || isMobileViewport || saveData || lowCpu || lowMemory;
+    refreshPerformanceFlags();
+    window.addEventListener('resize', handleResize, { passive: true });
 
     const mountChatWidget = () => {
         showChatWidget.value = true;
@@ -166,6 +268,12 @@ onBeforeUnmount(() => {
     if (revealObserver) {
         revealObserver.disconnect();
         revealObserver = null;
+    }
+
+    window.removeEventListener('resize', handleResize);
+    if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = null;
     }
 });
 
@@ -220,24 +328,29 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Software sob medida com IA e performance">
-        <meta name="description" content="Engenharia de software sob medida, design de alta performance e IA aplicada." />
+    <Head :title="shareTitle">
+        <meta name="description" :content="shareDescription" />
         <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
 
         <link rel="canonical" :href="canonicalUrl" />
         <link rel="alternate" hreflang="pt-BR" :href="canonicalUrl" />
 
         <meta property="og:site_name" content="MedidaTek" />
-        <meta property="og:title" content="Software sob medida com IA e performance - MedidaTek" />
-        <meta property="og:description" content="Engenharia de software sob medida, design de alta performance e IA aplicada." />
+        <meta property="og:title" :content="shareTitle" />
+        <meta property="og:description" :content="shareDescription" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="pt_BR" />
         <meta property="og:url" :content="canonicalUrl" />
         <meta property="og:image" :content="ogImageUrl" />
+        <meta property="og:image:secure_url" :content="ogImageUrl" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="MedidaTek - Sistema sob medida para sua operacao" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Software sob medida com IA e performance - MedidaTek" />
-        <meta name="twitter:description" content="Engenharia de software sob medida, design de alta performance e IA aplicada." />
+        <meta name="twitter:title" :content="shareTitle" />
+        <meta name="twitter:description" :content="shareDescription" />
         <meta name="twitter:image" :content="ogImageUrl" />
 
         <script type="application/ld+json">{{ jsonLd }}</script>
@@ -510,7 +623,7 @@ function submit() {
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
                     <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('architecture').src" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('architecture').src" :srcset="bentoImage('architecture').srcset || undefined" :sizes="bentoImage('architecture').sizes || undefined" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-end p-8">
@@ -524,7 +637,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('speed').src" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('speed').src" :srcset="bentoImage('speed').srcset || undefined" :sizes="bentoImage('speed').sizes || undefined" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8">
@@ -540,7 +653,7 @@ function submit() {
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('ai').src" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('ai').src" :srcset="bentoImage('ai').srcset || undefined" :sizes="bentoImage('ai').sizes || undefined" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -556,7 +669,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                             <img :src="bentoImage('design').src" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                             <img :src="bentoImage('design').src" :srcset="bentoImage('design').srcset || undefined" :sizes="bentoImage('design').sizes || undefined" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -574,7 +687,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
-                        <img :src="bentoImage('mobile').src" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                        <img :src="bentoImage('mobile').src" :srcset="bentoImage('mobile').srcset || undefined" :sizes="bentoImage('mobile').sizes || undefined" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                         
                         <div class="relative z-20 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
@@ -594,7 +707,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('security').src" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('security').src" :srcset="bentoImage('security').srcset || undefined" :sizes="bentoImage('security').sizes || undefined" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-l from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8 text-right items-end">
@@ -617,64 +730,27 @@ function submit() {
                 <div class="projects-marquee-container px-4">
                     <div class="projects-marquee-track">
                         <a
-                            v-for="(item, index) in proofLinks"
-                            :key="`p-${index}-${item.url}`"
+                            v-for="(item, index) in projectMarqueeLinks"
+                            :key="`project-${index}-${item.url}`"
                             :href="item.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/35 hover:shadow-2xl hover:shadow-indigo-500/20 transition-all hover:-translate-y-1"
+                            class="project-card min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/35 hover:shadow-2xl hover:shadow-indigo-500/20 transition-all hover:-translate-y-1"
                         >
                             <div class="absolute inset-0 z-0">
                                 <img
                                     v-if="item.image_src"
                                     :src="item.image_src"
+                                    :srcset="item.image_srcset || undefined"
+                                    :sizes="item.image_sizes || undefined"
                                     :alt="item.image_alt || item.name"
-                                    class="w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-                                    loading="lazy"
+                                    class="project-image w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                                    :loading="projectImageLoading(index)"
+                                    :fetchpriority="projectImageFetchPriority(index)"
                                     decoding="async"
-                                />
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
-                                    :class="item.image_src ? 'opacity-10' : ''"
-                                ></div>
-                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
-                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
-                                <div
-                                    v-if="item.image_src"
-                                    class="absolute inset-0 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
-                                    style="background: radial-gradient(120% 100% at 50% 0%, rgba(99,102,241,0.22) 0%, rgba(255,255,255,0.08) 35%, rgba(0,0,0,0) 70%);"
-                                ></div>
-                            </div>
-
-                            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-between bg-gradient-to-t from-black/65 to-transparent">
-                                <div class="flex justify-end">
-                                    <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
-                                        {{ item.tag }}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-white group-hover:text-indigo-200 transition-colors">{{ item.name }}</h3>
-                                    <p class="text-sm text-white/70 mt-1 line-clamp-2">{{ item.note || 'Plataforma web de alta performance.' }}</p>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a
-                            v-for="(item, index) in proofLinks"
-                            :key="`d-${index}-${item.url}`"
-                            :href="item.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="min-w-[300px] md:min-w-[400px] group relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 hover:ring-white/35 hover:shadow-2xl hover:shadow-indigo-500/20 transition-all hover:-translate-y-1"
-                        >
-                            <div class="absolute inset-0 z-0">
-                                <img
-                                    v-if="item.image_src"
-                                    :src="item.image_src"
-                                    :alt="item.image_alt || item.name"
-                                    class="w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-                                    loading="lazy"
-                                    decoding="async"
+                                    width="1200"
+                                    height="900"
+                                    draggable="false"
                                 />
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
@@ -1105,10 +1181,30 @@ function submit() {
 .performance-mode .projects-marquee-container {
     overflow-x: auto;
     mask-image: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
 }
 
 .performance-mode .projects-marquee-track {
     padding-bottom: 0;
+    will-change: auto;
+    gap: 1rem;
+}
+
+.performance-mode .project-card,
+.performance-mode .project-card:hover {
+    transform: none !important;
+    box-shadow: none;
+}
+
+.performance-mode .project-image {
+    filter: none !important;
+    transform: none !important;
+}
+
+.performance-mode .project-card .backdrop-blur {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
 }
 
 .performance-mode .glass-nav,
@@ -1307,6 +1403,16 @@ function submit() {
     will-change: transform;
 }
 
+.project-card {
+    contain: layout paint;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.project-image {
+    transform: translateZ(0);
+}
+
 .projects-marquee-container:hover .projects-marquee-track {
     animation-play-state: paused;
 }
@@ -1314,6 +1420,35 @@ function submit() {
 @keyframes projects-marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(calc(-50% - (var(--projects-marquee-gap) * 0.5))); }
+}
+
+@media (max-width: 1024px) {
+    .projects-marquee-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        mask-image: none;
+        padding-bottom: 0.25rem;
+    }
+
+    .projects-marquee-track {
+        animation: none;
+        will-change: auto;
+        padding-bottom: 0;
+        gap: 1rem;
+        padding-right: 1rem;
+    }
+
+    .project-card {
+        min-width: min(88vw, 360px) !important;
+        scroll-snap-align: start;
+    }
+
+    .project-image {
+        filter: none;
+        transform: none !important;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

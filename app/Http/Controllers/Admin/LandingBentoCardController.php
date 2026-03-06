@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class LandingBentoCardController extends Controller
 {
@@ -60,7 +60,7 @@ class LandingBentoCardController extends Controller
             $file = $request->file('image');
             if ($file instanceof UploadedFile) {
                 if ($card->image_url && !Str::startsWith($card->image_url, ['http://', 'https://'])) {
-                    Storage::disk('public')->delete($card->image_url);
+                    $this->deleteBentoImageVariantsIfInternal($card->image_url);
                 }
 
                 try {
@@ -103,7 +103,7 @@ class LandingBentoCardController extends Controller
 
                 if (isset($row['image']) && $row['image']) {
                     if ($card->image_url && !Str::startsWith($card->image_url, ['http://', 'https://'])) {
-                        Storage::disk('public')->delete($card->image_url);
+                        $this->deleteBentoImageVariantsIfInternal($card->image_url);
                     }
 
                     if ($row['image'] instanceof UploadedFile) {
@@ -125,20 +125,132 @@ class LandingBentoCardController extends Controller
         return redirect()->route('admin.landing.bento.edit');
     }
 
+    private function deleteBentoImageVariantsIfInternal(?string $imageUrl): void
+    {
+        $imageUrl = $imageUrl ? trim($imageUrl) : null;
+        if (!$imageUrl) {
+            return;
+        }
+
+        if (Str::startsWith($imageUrl, ['http://', 'https://'])) {
+            return;
+        }
+
+        $mobileVariant = $this->mobileVariantPath($imageUrl);
+        Storage::disk('public')->delete(array_values(array_filter([$imageUrl, $mobileVariant])));
+    }
+
+    private function mobileVariantPath(string $relativePath): string
+    {
+        $extension = pathinfo($relativePath, PATHINFO_EXTENSION);
+        $filename = pathinfo($relativePath, PATHINFO_FILENAME);
+        $directory = pathinfo($relativePath, PATHINFO_DIRNAME);
+        $directory = $directory === '.' ? '' : $directory.'/';
+
+        return $directory.$filename.'-sm'.($extension ? '.'.$extension : '');
+    }
+
+    private function createResizedCanvas($source, int $width, int $height)
+    {
+        $canvas = imagecreatetruecolor($width, $height);
+        imagealphablending($canvas, false);
+        imagesavealpha($canvas, true);
+        $transparent = imagecolorallocatealpha($canvas, 0, 0, 0, 127);
+        imagefilledrectangle($canvas, 0, 0, $width, $height, $transparent);
+        imagecopyresampled(
+            $canvas,
+            $source,
+            0,
+            0,
+            0,
+            0,
+            $width,
+            $height,
+            imagesx($source),
+            imagesy($source),
+        );
+
+        return $canvas;
+    }
+
+    private function encodeImageResourceToFile($image, string $tmpPath, int $targetBytes, ?string $preferredExt = null): array
+    {
+        $qualitySteps = [82, 78, 74, 70, 66, 62, 58];
+
+        if (($preferredExt === null || $preferredExt === 'webp') && function_exists('imagewebp')) {
+            foreach ($qualitySteps as $quality) {
+                $ok = @imagewebp($image, $tmpPath, $quality);
+                if (!$ok) {
+                    break;
+                }
+
+                clearstatcache(true, $tmpPath);
+                $size = @filesize($tmpPath);
+                if (is_int($size) && $size > 0 && $size <= $targetBytes) {
+                    return [true, 'webp'];
+                }
+            }
+
+            clearstatcache(true, $tmpPath);
+            $size = @filesize($tmpPath);
+            if (is_int($size) && $size > 0) {
+                return [true, 'webp'];
+            }
+        }
+
+        if ($preferredExt === 'webp') {
+            return [false, 'webp'];
+        }
+
+        foreach ($qualitySteps as $quality) {
+            $ok = @imagejpeg($image, $tmpPath, $quality);
+            if (!$ok) {
+                break;
+            }
+
+            clearstatcache(true, $tmpPath);
+            $size = @filesize($tmpPath);
+            if (is_int($size) && $size > 0 && $size <= $targetBytes) {
+                return [true, 'jpg'];
+            }
+        }
+
+        clearstatcache(true, $tmpPath);
+        $size = @filesize($tmpPath);
+        if (is_int($size) && $size > 0) {
+            return [true, 'jpg'];
+        }
+
+        return [false, $preferredExt ?? 'jpg'];
+    }
+
+    private function writeProcessedImage(string $relativePath, string $tmpPath): void
+    {
+        $contents = file_get_contents($tmpPath);
+        if (!is_string($contents) || $contents === '') {
+            throw new \RuntimeException('Falha ao ler o arquivo processado.');
+        }
+
+        $written = Storage::disk('public')->put($relativePath, $contents, 'public');
+        if (!$written) {
+            throw new \RuntimeException('Falha ao gravar imagem no storage.');
+        }
+    }
+
     private function storeBentoImage(string $key, UploadedFile $file): array
     {
         if (!function_exists('imagecreatetruecolor')) {
-            throw new \RuntimeException('Extensão GD não instalada no servidor (php-gd).');
+            throw new \RuntimeException('Extensao GD nao instalada no servidor (php-gd).');
         }
 
         $sourcePath = $file->getRealPath();
         if (!$sourcePath) {
-            throw new \RuntimeException('Upload inválido.');
+            throw new \RuntimeException('Upload invalido.');
         }
 
         $info = @getimagesize($sourcePath);
         if (!is_array($info) || count($info) < 3) {
-            throw new \RuntimeException('Imagem inválida.');
+            throw new \RuntimeException('Imagem invalida.');
         }
 
         [$width, $height, $type] = $info;
@@ -151,7 +263,7 @@ class LandingBentoCardController extends Controller
         };
 
         if (!$source) {
-            throw new \RuntimeException('Formato de imagem não suportado.');
+            throw new \RuntimeException('Formato de imagem nao suportado.');
         }
 
         if ($type === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
@@ -189,77 +301,59 @@ class LandingBentoCardController extends Controller
         $maxWidth = 1200;
         $outWidth = $cropWidth > $maxWidth ? $maxWidth : $cropWidth;
         $outHeight = (int) round($outWidth * 3 / 4);
+        $mobileWidth = min(640, $outWidth);
+        $mobileHeight = (int) round($mobileWidth * 3 / 4);
 
-        $output = imagecreatetruecolor($outWidth, $outHeight);
-        imagealphablending($output, false);
-        imagesavealpha($output, true);
-        $transparentOut = imagecolorallocatealpha($output, 0, 0, 0, 127);
-        imagefilledrectangle($output, 0, 0, $outWidth, $outHeight, $transparentOut);
-        imagecopyresampled($output, $cropped, 0, 0, 0, 0, $outWidth, $outHeight, $cropWidth, $cropHeight);
+        $outputDesktop = $this->createResizedCanvas($cropped, $outWidth, $outHeight);
+        $outputMobile = $this->createResizedCanvas($cropped, $mobileWidth, $mobileHeight);
 
-        $tmp = tempnam(sys_get_temp_dir(), 'bento_');
-        if (!$tmp) {
+        $tmpDesktop = tempnam(sys_get_temp_dir(), 'bento_desktop_');
+        $tmpMobile = tempnam(sys_get_temp_dir(), 'bento_mobile_');
+        if (!$tmpDesktop || !$tmpMobile) {
+            if ($tmpDesktop) {
+                @unlink($tmpDesktop);
+            }
+            if ($tmpMobile) {
+                @unlink($tmpMobile);
+            }
+            imagedestroy($outputDesktop);
+            imagedestroy($outputMobile);
+            imagedestroy($cropped);
+            imagedestroy($source);
             throw new \RuntimeException('Falha ao processar imagem.');
         }
 
-        $targetBytes = 350 * 1024;
-        $qualitySteps = [82, 78, 74, 70, 66, 62, 58];
+        [$desktopOk, $ext] = $this->encodeImageResourceToFile($outputDesktop, $tmpDesktop, 350 * 1024);
+        [$mobileOk] = $this->encodeImageResourceToFile($outputMobile, $tmpMobile, 190 * 1024, $ext);
 
-        $ext = 'webp';
-        $ok = false;
-        if (function_exists('imagewebp')) {
-            foreach ($qualitySteps as $quality) {
-                $ok = @imagewebp($output, $tmp, $quality);
-                if (!$ok) {
-                    break;
-                }
-                clearstatcache(true, $tmp);
-                $size = @filesize($tmp);
-                if (is_int($size) && $size > 0 && $size <= $targetBytes) {
-                    break;
-                }
-            }
-        }
-
-        if (!$ok) {
-            $ext = 'jpg';
-            foreach ($qualitySteps as $quality) {
-                $ok = @imagejpeg($output, $tmp, $quality);
-                if (!$ok) {
-                    break;
-                }
-                clearstatcache(true, $tmp);
-                $size = @filesize($tmp);
-                if (is_int($size) && $size > 0 && $size <= $targetBytes) {
-                    break;
-                }
-            }
-        }
-
-        imagedestroy($output);
+        imagedestroy($outputDesktop);
+        imagedestroy($outputMobile);
         imagedestroy($cropped);
         imagedestroy($source);
 
-        if (!$ok) {
-            @unlink($tmp);
+        if (!$desktopOk || !$mobileOk) {
+            @unlink($tmpDesktop);
+            @unlink($tmpMobile);
             throw new \RuntimeException('Falha ao salvar imagem.');
         }
 
-        $filename = $key.'-'.now()->format('YmdHis').'.'.$ext;
+        $baseName = $key.'-'.now()->format('YmdHis');
+        $filename = $baseName.'.'.$ext;
         $relativePath = 'landing/bento/'.$filename;
-        $contents = file_get_contents($tmp);
-        if (!is_string($contents) || $contents === '') {
-            @unlink($tmp);
-            throw new \RuntimeException('Falha ao ler o arquivo processado.');
+        $mobileRelativePath = 'landing/bento/'.$baseName.'-sm.'.$ext;
+
+        try {
+            $this->writeProcessedImage($relativePath, $tmpDesktop);
+            $this->writeProcessedImage($mobileRelativePath, $tmpMobile);
+        } catch (\Throwable $e) {
+            $this->deleteBentoImageVariantsIfInternal($relativePath);
+            throw $e;
+        } finally {
+            @unlink($tmpDesktop);
+            @unlink($tmpMobile);
         }
 
-        $written = Storage::disk('public')->put($relativePath, $contents, 'public');
-        @unlink($tmp);
-        if (!$written) {
-            throw new \RuntimeException('Falha ao gravar imagem no storage.');
-        }
-
-        return [$relativePath, $ext];
+        return [$relativePath, $ext, $mobileRelativePath];
     }
 
     private function applyExifOrientation($image, int $orientation)
