@@ -12,6 +12,7 @@ use App\Http\Controllers\LeadController;
 use App\Models\LandingBentoCard;
 use App\Models\LegalDocument;
 use App\Models\Project;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -57,13 +58,72 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200)->header('Content-Type', 'application/xml; charset=UTF-8');
 })->name('sitemap');
 
-$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix): ?string {
+$legacyUnsplashMap = [
+    'photo-2JJ3wBHu4_0' => 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+    'photo-Ib2e4-Qy9mQ' => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    'photo-zips8ILZd04' => 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    'photo-qaedPly-Uro' => 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
+    'photo-BlWbfrQrI5k' => 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80',
+    'photo-RMIsZlv8qv4' => 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=1200&q=80',
+];
+
+$remapLegacyExternalImageUrl = function (string $imageUrl) use ($legacyUnsplashMap): string {
+    foreach ($legacyUnsplashMap as $legacyFragment => $replacementUrl) {
+        if (Str::contains($imageUrl, $legacyFragment)) {
+            return $replacementUrl;
+        }
+    }
+
+    return $imageUrl;
+};
+
+$ensureUnsplashJpeg = function (string $imageUrl): string {
+    $parts = parse_url($imageUrl);
+    if (!$parts || !isset($parts['host']) || strtolower($parts['host']) !== 'images.unsplash.com') {
+        return $imageUrl;
+    }
+
+    $query = [];
+    if (!empty($parts['query'])) {
+        parse_str($parts['query'], $query);
+    }
+
+    $query['fm'] = 'jpg';
+    $query['auto'] = 'format';
+    $query['q'] = $query['q'] ?? '80';
+    $query['w'] = $query['w'] ?? '1200';
+
+    $rebuilt = ($parts['scheme'] ?? 'https').'://'.$parts['host'].($parts['path'] ?? '');
+    $rebuilt .= '?'.http_build_query($query);
+
+    return $rebuilt;
+};
+
+$encodeBase64Url = function (string $value): string {
+    return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+};
+
+$decodeBase64Url = function (string $value): ?string {
+    $padding = (4 - (strlen($value) % 4)) % 4;
+    $decoded = base64_decode(strtr($value.str_repeat('=', $padding), '-_', '+/'), true);
+
+    return is_string($decoded) && $decoded !== '' ? $decoded : null;
+};
+
+$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix) use ($remapLegacyExternalImageUrl, $ensureUnsplashJpeg, $encodeBase64Url): ?string {
     $imageUrl = $imageUrl ? trim($imageUrl) : null;
     if (!$imageUrl) {
         return null;
     }
 
     if (Str::startsWith($imageUrl, ['http://', 'https://'])) {
+        $imageUrl = $remapLegacyExternalImageUrl($imageUrl);
+        $imageUrl = $ensureUnsplashJpeg($imageUrl);
+        $host = strtolower(parse_url($imageUrl, PHP_URL_HOST) ?? '');
+        if ($host === 'images.unsplash.com') {
+            return route('media.remote', ['encoded' => $encodeBase64Url($imageUrl)], absolute: false);
+        }
+
         return $imageUrl;
     }
 
@@ -266,6 +326,74 @@ $serveProjectImage = function (string $filename) {
 
 Route::get('/midia/projetos/{filename}', $serveProjectImage)->name('media.projects');
 Route::get('/storage/projects/{filename}', $serveProjectImage);
+
+$serveRemoteImage = function (string $encoded) use ($decodeBase64Url, $remapLegacyExternalImageUrl, $ensureUnsplashJpeg) {
+    if (!preg_match('/^[A-Za-z0-9\-_]+$/', $encoded)) {
+        abort(404);
+    }
+
+    $decoded = $decodeBase64Url($encoded);
+    if (!$decoded || !filter_var($decoded, FILTER_VALIDATE_URL)) {
+        abort(404);
+    }
+
+    $targetUrl = $ensureUnsplashJpeg($remapLegacyExternalImageUrl($decoded));
+    $scheme = strtolower(parse_url($targetUrl, PHP_URL_SCHEME) ?? '');
+    $host = strtolower(parse_url($targetUrl, PHP_URL_HOST) ?? '');
+    if ($scheme !== 'https' || $host !== 'images.unsplash.com') {
+        abort(404);
+    }
+
+    $disk = Storage::disk('public');
+    $cacheBase = 'landing/remote-cache';
+    $cacheKey = sha1($targetUrl);
+    $metaPath = $cacheBase.'/'.$cacheKey.'.json';
+
+    if ($disk->exists($metaPath)) {
+        $meta = json_decode($disk->get($metaPath), true);
+        $cachedPath = is_array($meta) ? ($meta['path'] ?? null) : null;
+        $cachedMime = is_array($meta) ? ($meta['mime'] ?? null) : null;
+
+        if (is_string($cachedPath) && $disk->exists($cachedPath)) {
+            return response()->file($disk->path($cachedPath), [
+                'Content-Type' => $cachedMime ?: 'image/jpeg',
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+                'Content-Disposition' => 'inline; filename="'.basename($cachedPath).'"',
+            ]);
+        }
+    }
+
+    $response = Http::timeout(15)->retry(1, 200)->get($targetUrl);
+    if (!$response->successful()) {
+        abort(404);
+    }
+
+    $mime = strtolower(trim(explode(';', $response->header('Content-Type') ?? '')[0] ?? ''));
+    if (!Str::startsWith($mime, 'image/')) {
+        abort(404);
+    }
+
+    $ext = match ($mime) {
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/avif' => 'avif',
+        'image/gif' => 'gif',
+        default => 'img',
+    };
+
+    $cachedPath = $cacheBase.'/'.$cacheKey.'.'.$ext;
+    $disk->put($cachedPath, $response->body());
+    $disk->put($metaPath, json_encode(['path' => $cachedPath, 'mime' => $mime], JSON_UNESCAPED_SLASHES));
+
+    return response()->file($disk->path($cachedPath), [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=31536000, immutable',
+        'Content-Disposition' => 'inline; filename="'.basename($cachedPath).'"',
+    ]);
+};
+
+Route::get('/midia/remota/{encoded}', $serveRemoteImage)->name('media.remote');
 
 Route::get('/politica-de-privacidade', function () {
     $title = 'Política de Privacidade';
