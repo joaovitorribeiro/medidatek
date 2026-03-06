@@ -31,7 +31,7 @@ const deleteForm = useForm({});
 const page = usePage();
 const canManageProjects = computed(() => {
     const user = (page.props as any)?.auth?.user;
-    return Boolean(user?.is_admin || user?.is_staff);
+    return Boolean(user?.is_admin);
 });
 
 function destroy(id: number) {

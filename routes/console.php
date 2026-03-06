@@ -10,19 +10,30 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('app:ensure-admin', function () {
-    $email = env('ADMIN_EMAIL');
+    $email = strtolower(trim((string) env('ADMIN_EMAIL', '')));
     $password = env('ADMIN_PASSWORD');
     $name = env('ADMIN_NAME', 'Admin');
 
-    if (!$email || !$password) {
-        $this->error('Missing ADMIN_EMAIL or ADMIN_PASSWORD.');
+    if (!$email || !$password || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $this->error('Missing or invalid ADMIN_EMAIL / ADMIN_PASSWORD.');
         return 1;
     }
 
-    $user = User::query()->firstOrNew(['email' => $email]);
-    $user->name = $user->exists ? $user->name : $name;
+    $user = User::query()
+        ->whereRaw('LOWER(email) = ?', [$email])
+        ->first();
+
+    if (!$user) {
+        $user = new User();
+        $user->email = $email;
+    } else {
+        $user->email = $email;
+    }
+
+    $user->name = $user->exists ? ($user->name ?: $name) : $name;
     $user->password = Hash::make($password);
     $user->is_admin = true;
+    $user->is_staff = true;
     $user->email_verified_at = $user->email_verified_at ?: now();
     $user->save();
 
