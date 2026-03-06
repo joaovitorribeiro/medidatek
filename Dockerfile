@@ -13,7 +13,8 @@ COPY resources ./resources
 COPY public ./public
 COPY vite.config.js tsconfig.json postcss.config.js tailwind.config.js ./
 COPY --from=composer-build /app/vendor/tightenco/ziggy ./vendor/tightenco/ziggy
-RUN npx vite build
+RUN npx vite build \
+  && test -f /app/public/build/manifest.json
 
 FROM php:8.3-apache-bookworm AS app
 WORKDIR /app
