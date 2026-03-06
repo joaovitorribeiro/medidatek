@@ -30,6 +30,7 @@ const props = defineProps<{
 const sentOnce = ref(false);
 const step = ref<1 | 2 | 3 | 4>(1);
 const year = new Date().getFullYear();
+const isMobileViewport = ref(false);
 const isPerformanceMode = ref(false);
 const showChatWidget = ref(false);
 const clientErrors = ref<Record<string, string>>({});
@@ -145,11 +146,11 @@ const proofLinks = computed(() =>
 
 const hasProofLinks = computed(() => proofLinks.value.length > 0);
 const projectMarqueeLinks = computed(() =>
-    isPerformanceMode.value ? proofLinks.value : [...proofLinks.value, ...proofLinks.value],
+    isPerformanceMode.value || isMobileViewport.value ? proofLinks.value : [...proofLinks.value, ...proofLinks.value],
 );
 
 function projectImageLoading(index: number): 'lazy' | 'eager' {
-    if (!isPerformanceMode.value) {
+    if (!isPerformanceMode.value && !isMobileViewport.value) {
         return 'lazy';
     }
     return index < 3 ? 'eager' : 'lazy';
@@ -159,14 +160,25 @@ function projectImageFetchPriority(index: number): 'high' | 'low' {
     return index < 2 ? 'high' : 'low';
 }
 
+function infraImageLoading(index: number): 'lazy' | 'eager' {
+    if (isPerformanceMode.value) {
+        return 'eager';
+    }
+    return index < 2 ? 'eager' : 'lazy';
+}
+
+function infraImageFetchPriority(index: number): 'high' | 'low' {
+    return index < 2 ? 'high' : 'low';
+}
+
 function bentoImage(key: string): BentoImage {
     const image = props.bentoImages?.[key];
     if (!image) {
-        return { src: '', alt: '' };
+        return { src: '/og/medidatek-og.png', srcset: null, sizes: null, alt: 'MedidaTek' };
     }
 
     return {
-        src: normalizeImageSrc(image.src) ?? '',
+        src: normalizeImageSrc(image.src) ?? '/og/medidatek-og.png',
         srcset: normalizeSrcset(image.srcset ?? null),
         sizes: (image.sizes ?? '').trim() || null,
         alt: image.alt,
@@ -210,7 +222,8 @@ function refreshPerformanceFlags() {
     const lowCpu = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
     const lowMemory = typeof (navigator as any)?.deviceMemory === 'number' && (navigator as any).deviceMemory <= 4;
 
-    isPerformanceMode.value = reduceMotion || mobileViewport || saveData || lowCpu || lowMemory;
+    isMobileViewport.value = mobileViewport;
+    isPerformanceMode.value = reduceMotion || saveData || lowCpu || lowMemory;
 }
 
 function handleResize() {
@@ -244,7 +257,7 @@ onMounted(() => {
 
     // Scroll & Reveal Animations
     const revealEls = Array.from(document.querySelectorAll('.animate-on-scroll'));
-    if (isPerformanceMode.value || !('IntersectionObserver' in window)) {
+    if (isPerformanceMode.value || isMobileViewport.value || !('IntersectionObserver' in window)) {
         revealEls.forEach((el) => el.classList.add('in-view'));
         return;
     }
@@ -362,7 +375,7 @@ function submit() {
     >
         <!-- Aurora Background -->
         <div class="aurora-bg fixed inset-0 z-0 pointer-events-none">
-            <FuturisticBackground v-if="!isPerformanceMode" />
+            <FuturisticBackground v-if="!isPerformanceMode && !isMobileViewport" />
             <div class="future-grid"></div>
             <div class="future-dots"></div>
             <div class="future-scan"></div>
@@ -614,7 +627,7 @@ function submit() {
                 </div>
             </section>
 
-            <section id="infraestrutura" class="perf-section py-28 px-4 max-w-7xl mx-auto">
+            <section id="infraestrutura" class="infra-section perf-section py-28 px-4 max-w-7xl mx-auto">
                 <div class="mb-12">
                     <h2 class="text-4xl md:text-5xl font-medium tracking-tight">Infraestrutura</h2>
                     <p class="mt-4 text-white/60 max-w-2xl text-lg">A base que sustenta o sistema: arquitetura, performance, IA, design, mobile e segurança.</p>
@@ -623,7 +636,7 @@ function submit() {
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
                     <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('architecture').src" :srcset="bentoImage('architecture').srcset || undefined" :sizes="bentoImage('architecture').sizes || undefined" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('architecture').src" :srcset="bentoImage('architecture').srcset || undefined" :sizes="bentoImage('architecture').sizes || undefined" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(0)" :fetchpriority="infraImageFetchPriority(0)" decoding="async" referrerpolicy="no-referrer" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-end p-8">
@@ -631,13 +644,13 @@ function submit() {
                                 <span class="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold uppercase tracking-wider">Core</span>
                             </div>
                             <h3 class="text-3xl font-medium text-white mb-2">Arquitetura Escalável</h3>
-                            <p class="text-white/70 text-lg leading-relaxed max-w-md">Esqueça adaptações forçadas. Construímos exatamente o que seu processo exige, pronto para milhões de requisições desde o dia 1.</p>
+                            <p class="text-white/70 text-lg leading-relaxed max-w-md">Esqueça adaptações forçadas. Construímos exatamente o que seu processo exige, pronto para milhões de acessos desde o dia 1.</p>
                         </div>
                     </div>
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('speed').src" :srcset="bentoImage('speed').srcset || undefined" :sizes="bentoImage('speed').sizes || undefined" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('speed').src" :srcset="bentoImage('speed').srcset || undefined" :sizes="bentoImage('speed').sizes || undefined" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(1)" :fetchpriority="infraImageFetchPriority(1)" decoding="async" referrerpolicy="no-referrer" />
                             <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8">
@@ -653,7 +666,7 @@ function submit() {
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('ai').src" :srcset="bentoImage('ai').srcset || undefined" :sizes="bentoImage('ai').sizes || undefined" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('ai').src" :srcset="bentoImage('ai').srcset || undefined" :sizes="bentoImage('ai').sizes || undefined" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" :loading="infraImageLoading(2)" :fetchpriority="infraImageFetchPriority(2)" decoding="async" referrerpolicy="no-referrer" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -669,7 +682,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                             <img :src="bentoImage('design').src" :srcset="bentoImage('design').srcset || undefined" :sizes="bentoImage('design').sizes || undefined" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                             <img :src="bentoImage('design').src" :srcset="bentoImage('design').srcset || undefined" :sizes="bentoImage('design').sizes || undefined" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(3)" :fetchpriority="infraImageFetchPriority(3)" decoding="async" referrerpolicy="no-referrer" />
                              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -687,7 +700,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
-                        <img :src="bentoImage('mobile').src" :srcset="bentoImage('mobile').srcset || undefined" :sizes="bentoImage('mobile').sizes || undefined" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                        <img :src="bentoImage('mobile').src" :srcset="bentoImage('mobile').srcset || undefined" :sizes="bentoImage('mobile').sizes || undefined" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(4)" :fetchpriority="infraImageFetchPriority(4)" decoding="async" referrerpolicy="no-referrer" />
                         
                         <div class="relative z-20 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
@@ -707,7 +720,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('security').src" :srcset="bentoImage('security').srcset || undefined" :sizes="bentoImage('security').sizes || undefined" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                            <img :src="bentoImage('security').src" :srcset="bentoImage('security').srcset || undefined" :sizes="bentoImage('security').sizes || undefined" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(5)" :fetchpriority="infraImageFetchPriority(5)" decoding="async" referrerpolicy="no-referrer" />
                             <div class="absolute inset-0 bg-gradient-to-l from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8 text-right items-end">
@@ -744,7 +757,7 @@ function submit() {
                                     :srcset="item.image_srcset || undefined"
                                     :sizes="item.image_sizes || undefined"
                                     :alt="item.image_alt || item.name"
-                                    class="project-image w-full h-full object-cover opacity-85 contrast-115 saturate-125 brightness-115 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                                    class="project-image w-full h-full object-cover opacity-95 contrast-110 saturate-125 brightness-125 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                                     :loading="projectImageLoading(index)"
                                     :fetchpriority="projectImageFetchPriority(index)"
                                     decoding="async"
@@ -754,26 +767,27 @@ function submit() {
                                 />
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
-                                    :class="item.image_src ? 'opacity-10' : ''"
+                                    :class="item.image_src ? 'opacity-5' : ''"
                                 ></div>
-                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
+                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent"></div>
                                 <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
                                 <div
                                     v-if="item.image_src"
                                     class="absolute inset-0 opacity-80 transition-opacity duration-500 group-hover:opacity-100"
                                     style="background: radial-gradient(120% 100% at 50% 0%, rgba(99,102,241,0.22) 0%, rgba(255,255,255,0.08) 35%, rgba(0,0,0,0) 70%);"
                                 ></div>
+                                <div v-if="item.image_src" class="absolute inset-0 bg-gradient-to-tr from-indigo-400/12 via-transparent to-cyan-300/10"></div>
                             </div>
 
-                            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-between bg-gradient-to-t from-black/65 to-transparent">
+                            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-between bg-gradient-to-t from-black/40 via-black/10 to-transparent">
                                 <div class="flex justify-end">
                                     <div v-if="item.tag" class="px-3 py-1 text-xs font-medium bg-white/10 backdrop-blur rounded-full border border-white/10">
                                         {{ item.tag }}
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-white group-hover:text-indigo-200 transition-colors">{{ item.name }}</h3>
-                                    <p class="text-sm text-white/70 mt-1 line-clamp-2">{{ item.note || 'Plataforma web de alta performance.' }}</p>
+                                <div class="project-caption-panel max-w-[90%] rounded-xl border border-white/20 p-3">
+                                    <h3 class="text-xl font-bold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.65)] group-hover:text-indigo-100 transition-colors">{{ item.name }}</h3>
+                                    <p class="text-sm text-white/85 mt-1 line-clamp-2 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">{{ item.note || 'Plataforma web de alta performance.' }}</p>
                                 </div>
                             </div>
                         </a>
@@ -981,6 +995,13 @@ function submit() {
 .perf-section {
     content-visibility: auto;
     contain-intrinsic-size: 1px 980px;
+}
+
+@media (max-width: 1024px) {
+    .infra-section.perf-section {
+        content-visibility: visible;
+        contain-intrinsic-size: auto;
+    }
 }
 
 .aurora-bg {
@@ -1413,6 +1434,13 @@ function submit() {
     transform: translateZ(0);
 }
 
+.project-caption-panel {
+    background: linear-gradient(160deg, rgba(6, 7, 12, 0.62), rgba(6, 7, 12, 0.38));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
 .projects-marquee-container:hover .projects-marquee-track {
     animation-play-state: paused;
 }
@@ -1448,6 +1476,12 @@ function submit() {
     .project-image {
         filter: none;
         transform: none !important;
+    }
+
+    .project-caption-panel {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: rgba(7, 8, 12, 0.56);
     }
 }
 

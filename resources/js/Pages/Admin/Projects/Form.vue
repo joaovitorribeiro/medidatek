@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
                 </h2>
                 <Link
                     :href="route('admin.projects.index')"
-                    class="text-sm font-semibold text-gray-200 hover:text-white"
+                    class="text-sm font-semibold text-slate-600 hover:text-indigo-600"
                 >
                     Voltar
                 </Link>

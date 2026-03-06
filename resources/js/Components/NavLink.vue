@@ -9,8 +9,8 @@ const props = defineProps<{
 
 const classes = computed(() =>
     props.active
-        ? 'group relative flex w-full items-center gap-3 rounded-xl bg-[#6C5DD3] px-3 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all duration-200'
-        : 'group relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-400 transition-all duration-200 hover:bg-[#2D2D3A] hover:text-white',
+        ? 'group relative flex w-full items-center gap-3 rounded-xl bg-indigo-600 px-3 py-3 text-sm font-semibold text-white shadow-sm ring-1 ring-indigo-600/30 transition-all duration-200'
+        : 'group relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-indigo-50 hover:text-slate-900',
 );
 </script>
 
