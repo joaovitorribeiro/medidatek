@@ -22,6 +22,8 @@ type BentoImage = {
     alt: string;
 };
 
+type BentoImageKey = 'architecture' | 'speed' | 'ai' | 'design' | 'mobile' | 'security';
+
 const props = defineProps<{
     proofLinks: ProofLink[];
     bentoImages: Record<string, BentoImage>;
@@ -80,6 +82,15 @@ const integrationList = [
     'Checkout & pagamentos', 'Assinaturas', 'Split de pagamento', 'PIX', 'Cartão', 'Boleto',
     'STRIPE', 'MERCADO PAGO', 'ASAAS', 'PAGSEGURO', 'IUGU', 'PAYPAL'
 ];
+
+const bentoFallbacks: Record<BentoImageKey, string> = {
+    architecture: 'https://images.unsplash.com/photo-2JJ3wBHu4_0?q=80&w=1200&auto=format&fit=crop',
+    speed: 'https://images.unsplash.com/photo-Ib2e4-Qy9mQ?q=80&w=1200&auto=format&fit=crop',
+    ai: 'https://images.unsplash.com/photo-zips8ILZd04?q=80&w=1200&auto=format&fit=crop',
+    design: 'https://images.unsplash.com/photo-qaedPly-Uro?q=80&w=1200&auto=format&fit=crop',
+    mobile: 'https://images.unsplash.com/photo-BlWbfrQrI5k?q=80&w=1200&auto=format&fit=crop',
+    security: 'https://images.unsplash.com/photo-RMIsZlv8qv4?q=80&w=1200&auto=format&fit=crop',
+};
 
 const featuredIntegrations = new Set(['Marketplace', 'Portal do cliente', 'Área de membros', 'SaaS sob medida']);
 function isFeaturedIntegration(tech: string) {
@@ -187,39 +198,15 @@ function desktopImageSizes(sizes?: string | null): string | undefined {
     return sizes || undefined;
 }
 
-function handleResponsiveImageError(event: Event) {
-    const img = event.target as HTMLImageElement | null;
-    if (!img) {
-        return;
-    }
-
-    const step = img.dataset.fallbackStep ?? '0';
-
-    if (step === '0' && img.getAttribute('srcset')) {
-        img.dataset.fallbackStep = '1';
-        const src = img.getAttribute('src');
-        img.removeAttribute('srcset');
-        img.removeAttribute('sizes');
-        if (src) {
-            img.src = src;
-        }
-        return;
-    }
-
-    if (step !== '2') {
-        img.dataset.fallbackStep = '2';
-        img.src = '/og/medidatek-og.png';
-    }
-}
-
 function bentoImage(key: string): BentoImage {
+    const fallbackSrc = bentoFallbacks[key as BentoImageKey] ?? '/og/medidatek-og.png';
     const image = props.bentoImages?.[key];
     if (!image) {
-        return { src: '/og/medidatek-og.png', srcset: null, sizes: null, alt: 'MedidaTek' };
+        return { src: fallbackSrc, srcset: null, sizes: null, alt: 'MedidaTek' };
     }
 
     return {
-        src: normalizeImageSrc(image.src) ?? '/og/medidatek-og.png',
+        src: normalizeImageSrc(image.src) ?? fallbackSrc,
         srcset: normalizeSrcset(image.srcset ?? null),
         sizes: (image.sizes ?? '').trim() || null,
         alt: image.alt,
@@ -677,7 +664,7 @@ function submit() {
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[320px]">
                     <div class="animate-on-scroll bento-card md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('architecture').src" :srcset="desktopImageSrcset(bentoImage('architecture').srcset)" :sizes="desktopImageSizes(bentoImage('architecture').sizes)" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(0)" :fetchpriority="infraImageFetchPriority(0)" decoding="async" @error="handleResponsiveImageError" />
+                            <img :src="bentoImage('architecture').src" :srcset="desktopImageSrcset(bentoImage('architecture').srcset)" :sizes="desktopImageSizes(bentoImage('architecture').sizes)" :alt="bentoImage('architecture').alt" class="futuristic-image w-full h-full object-cover opacity-75 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(0)" :fetchpriority="infraImageFetchPriority(0)" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-end p-8">
@@ -691,7 +678,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('speed').src" :srcset="desktopImageSrcset(bentoImage('speed').srcset)" :sizes="desktopImageSizes(bentoImage('speed').sizes)" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(1)" :fetchpriority="infraImageFetchPriority(1)" decoding="async" @error="handleResponsiveImageError" />
+                            <img :src="bentoImage('speed').src" :srcset="desktopImageSrcset(bentoImage('speed').srcset)" :sizes="desktopImageSizes(bentoImage('speed').sizes)" :alt="bentoImage('speed').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(1)" :fetchpriority="infraImageFetchPriority(1)" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8">
@@ -707,7 +694,7 @@ function submit() {
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 bg-gradient-to-br from-cyan-900/40 via-transparent to-transparent opacity-100"></div>
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('ai').src" :srcset="desktopImageSrcset(bentoImage('ai').srcset)" :sizes="desktopImageSizes(bentoImage('ai').sizes)" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" :loading="infraImageLoading(2)" :fetchpriority="infraImageFetchPriority(2)" decoding="async" @error="handleResponsiveImageError" />
+                            <img :src="bentoImage('ai').src" :srcset="desktopImageSrcset(bentoImage('ai').srcset)" :sizes="desktopImageSizes(bentoImage('ai').sizes)" :alt="bentoImage('ai').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" :loading="infraImageLoading(2)" :fetchpriority="infraImageFetchPriority(2)" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -723,7 +710,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                             <img :src="bentoImage('design').src" :srcset="desktopImageSrcset(bentoImage('design').srcset)" :sizes="desktopImageSizes(bentoImage('design').sizes)" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(3)" :fetchpriority="infraImageFetchPriority(3)" decoding="async" @error="handleResponsiveImageError" />
+                             <img :src="bentoImage('design').src" :srcset="desktopImageSrcset(bentoImage('design').srcset)" :sizes="desktopImageSizes(bentoImage('design').sizes)" :alt="bentoImage('design').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(3)" :fetchpriority="infraImageFetchPriority(3)" decoding="async" />
                              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-between p-8">
@@ -741,7 +728,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
-                        <img :src="bentoImage('mobile').src" :srcset="desktopImageSrcset(bentoImage('mobile').srcset)" :sizes="desktopImageSizes(bentoImage('mobile').sizes)" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(4)" :fetchpriority="infraImageFetchPriority(4)" decoding="async" @error="handleResponsiveImageError" />
+                        <img :src="bentoImage('mobile').src" :srcset="desktopImageSrcset(bentoImage('mobile').srcset)" :sizes="desktopImageSizes(bentoImage('mobile').sizes)" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(4)" :fetchpriority="infraImageFetchPriority(4)" decoding="async" />
                         
                         <div class="relative z-20 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
@@ -761,7 +748,7 @@ function submit() {
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
                         <div class="absolute inset-0 z-0">
-                            <img :src="bentoImage('security').src" :srcset="desktopImageSrcset(bentoImage('security').srcset)" :sizes="desktopImageSizes(bentoImage('security').sizes)" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(5)" :fetchpriority="infraImageFetchPriority(5)" decoding="async" @error="handleResponsiveImageError" />
+                            <img :src="bentoImage('security').src" :srcset="desktopImageSrcset(bentoImage('security').srcset)" :sizes="desktopImageSizes(bentoImage('security').sizes)" :alt="bentoImage('security').alt" class="futuristic-image w-full h-full object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(5)" :fetchpriority="infraImageFetchPriority(5)" decoding="async" />
                             <div class="absolute inset-0 bg-gradient-to-l from-black via-black/40 to-transparent"></div>
                         </div>
                         <div class="relative z-10 h-full flex flex-col justify-center p-8 text-right items-end">
@@ -805,7 +792,6 @@ function submit() {
                                     width="1200"
                                     height="900"
                                     draggable="false"
-                                    @error="handleResponsiveImageError"
                                 />
                                 <div
                                     class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 group-hover:scale-105 transition-transform duration-700"
@@ -1525,6 +1511,30 @@ function submit() {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
         background: rgba(7, 8, 12, 0.56);
+    }
+
+    .method-step-bg,
+    .method-step-card::after,
+    .hero-title-gradient,
+    .hero-title-strong::after {
+        animation: none !important;
+    }
+
+    .method-step-card,
+    .method-step-card:hover,
+    .bento-card,
+    .bento-card:hover,
+    .project-card,
+    .project-card:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .futuristic-image,
+    .project-image {
+        filter: none !important;
+        transform: none !important;
+        will-change: auto;
     }
 }
 
