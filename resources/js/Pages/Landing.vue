@@ -35,6 +35,7 @@ const year = new Date().getFullYear();
 const isMobileViewport = ref(
     typeof window !== 'undefined' ? window.matchMedia('(max-width: 1024px)').matches : false,
 );
+const isFirefoxBrowser = ref(false);
 const isPerformanceMode = ref(false);
 const showChatWidget = ref(false);
 const clientErrors = ref<Record<string, string>>({});
@@ -158,6 +159,7 @@ const proofLinks = computed(() =>
 );
 
 const hasProofLinks = computed(() => proofLinks.value.length > 0);
+const isFirefoxMobile = computed(() => isMobileViewport.value && isFirefoxBrowser.value);
 const projectMarqueeLinks = computed(() =>
     isPerformanceMode.value || isMobileViewport.value ? proofLinks.value : [...proofLinks.value, ...proofLinks.value],
 );
@@ -246,11 +248,14 @@ function refreshPerformanceFlags() {
 
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
     const mobileViewport = window.matchMedia?.('(max-width: 1024px)')?.matches ?? false;
+    const ua = navigator.userAgent || '';
+    const isFirefox = /firefox|fxios/i.test(ua);
     const saveData = (navigator as any)?.connection?.saveData === true;
     const lowCpu = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
     const lowMemory = typeof (navigator as any)?.deviceMemory === 'number' && (navigator as any).deviceMemory <= 4;
 
     isMobileViewport.value = mobileViewport;
+    isFirefoxBrowser.value = isFirefox;
     isPerformanceMode.value = reduceMotion || saveData || lowCpu || lowMemory;
 }
 
@@ -399,7 +404,7 @@ function submit() {
 
     <div
         class="landing-universe min-h-screen bg-[#030305] text-white selection:bg-indigo-500/30 selection:text-indigo-200"
-        :class="{ 'performance-mode': isPerformanceMode }"
+        :class="{ 'performance-mode': isPerformanceMode, 'firefox-mobile': isFirefoxMobile }"
     >
         <!-- Aurora Background -->
         <div class="aurora-bg fixed inset-0 z-0 pointer-events-none">
@@ -1498,13 +1503,13 @@ function submit() {
     }
 
     .project-card {
+        flex: 0 0 min(88vw, 360px);
         min-width: min(88vw, 360px) !important;
         scroll-snap-align: start;
     }
 
     .project-image {
         filter: none;
-        transform: none !important;
     }
 
     .project-caption-panel {
@@ -1520,22 +1525,32 @@ function submit() {
         animation: none !important;
     }
 
-    .method-step-card,
-    .method-step-card:hover,
-    .bento-card,
-    .bento-card:hover,
-    .project-card,
-    .project-card:hover {
-        transform: none !important;
-        transition: none !important;
-    }
-
     .futuristic-image,
     .project-image {
         filter: none !important;
-        transform: none !important;
         will-change: auto;
     }
+}
+
+.firefox-mobile .future-grid,
+.firefox-mobile .future-dots,
+.firefox-mobile .future-scan,
+.firefox-mobile .noise-overlay,
+.firefox-mobile .method-step-card::after {
+    animation: none !important;
+}
+
+.firefox-mobile .aurora-orb {
+    display: none;
+}
+
+.firefox-mobile .glass-nav,
+.firefox-mobile .project-caption-panel,
+.firefox-mobile .backdrop-blur-xl,
+.firefox-mobile .backdrop-blur-md,
+.firefox-mobile .backdrop-blur {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
