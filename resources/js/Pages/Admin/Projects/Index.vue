@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 type ProjectRow = {
     id: number;
@@ -25,14 +24,10 @@ type SimplePagination<T> = {
 
 defineProps<{
     projects: SimplePagination<ProjectRow>;
+    can_manage_projects: boolean;
 }>();
 
 const deleteForm = useForm({});
-const page = usePage();
-const canManageProjects = computed(() => {
-    const user = (page.props as any)?.auth?.user;
-    return Boolean(user?.is_admin || user?.is_staff);
-});
 
 function destroy(id: number) {
     deleteForm.delete(route('admin.projects.destroy', id));
@@ -45,12 +40,12 @@ function destroy(id: number) {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-semibold leading-tight text-white">
+                <h2 class="text-xl font-semibold leading-tight text-slate-900">
                     Projetos
                 </h2>
                 <div class="flex items-center gap-2">
                     <Link
-                        v-if="canManageProjects"
+                        v-if="can_manage_projects"
                         :href="route('admin.projects.create')"
                         class="rounded-lg bg-[#6C5DD3] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5A4BC6]"
                     >
@@ -141,7 +136,7 @@ function destroy(id: number) {
                                             </span>
                                         </td>
                                         <td class="px-3 py-2 text-right">
-                                            <div v-if="canManageProjects" class="flex justify-end gap-3">
+                                            <div v-if="can_manage_projects" class="flex justify-end gap-3">
                                                 <Link
                                                     :href="route('admin.projects.edit', row.id)"
                                                     class="text-sm font-semibold text-gray-700 hover:text-gray-900"

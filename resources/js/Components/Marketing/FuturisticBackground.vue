@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import Particles from '@tsparticles/vue3';
-import { loadSlim } from '@tsparticles/slim';
-import type { Engine, IOptions, RecursivePartial } from '@tsparticles/engine';
+import type { IOptions, RecursivePartial } from '@tsparticles/engine';
 
 const prefersReducedMotion =
     typeof window !== 'undefined' && 'matchMedia' in window
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
 
-const particlesInit = async (engine: Engine) => {
-    await loadSlim(engine);
-};
 
 const options = computed<RecursivePartial<IOptions>>(() => ({
     fullScreen: { enable: false },
@@ -69,7 +64,7 @@ const options = computed<RecursivePartial<IOptions>>(() => ({
 
 <template>
     <div class="future-canvas pointer-events-none absolute inset-0">
-        <Particles id="tsparticles" :particlesInit="particlesInit" :options="options" />
+        <vue-particles id="tsparticles" :options="options" />
         <div class="future-glow"></div>
     </div>
 </template>
@@ -90,3 +85,4 @@ const options = computed<RecursivePartial<IOptions>>(() => ({
     opacity: 0.9;
 }
 </style>
+

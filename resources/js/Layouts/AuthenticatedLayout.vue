@@ -284,6 +284,12 @@ onMounted(() => {
                 </div>
             </header>
 
+            <div v-if="$slots.header" class="border-b border-white/60 bg-slate-50/95 px-4 py-5 shadow-sm backdrop-blur sm:px-6 lg:px-8">
+                <div class="mx-auto max-w-7xl">
+                    <slot name="header" />
+                </div>
+            </div>
+
             <!-- Main Content -->
             <main class="py-10 px-4 sm:px-6 lg:px-8">
                 <slot />

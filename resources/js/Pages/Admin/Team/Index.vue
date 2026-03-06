@@ -143,6 +143,7 @@ function formatDate(value: string) {
                         Pr√≥ximo
                     </Link>
                     <button
+                        v-if="isAdmin"
                         type="button"
                         class="rounded-2xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                         @click="openCreate"
@@ -157,8 +158,18 @@ function formatDate(value: string) {
             <div class="mx-auto max-w-7xl">
                 <div class="overflow-hidden rounded-3xl border border-white/60 bg-white/70 shadow-sm backdrop-blur">
                     <div class="border-b border-white/60 px-6 py-5">
-                        <div class="text-sm font-semibold text-slate-900">
-                            Usu√°rios
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="text-sm font-semibold text-slate-900">
+                                Usu·rios
+                            </div>
+                            <button
+                                v-if="isAdmin"
+                                type="button"
+                                class="rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm ring-1 ring-indigo-300/40 transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                                @click="openCreate"
+                            >
+                                Criar usu·rio
+                            </button>
                         </div>
                     </div>
 
@@ -402,3 +413,4 @@ function formatDate(value: string) {
         </Transition>
     </AuthenticatedLayout>
 </template>
+

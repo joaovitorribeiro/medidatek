@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-semibold leading-tight text-white">
+                <h2 class="text-xl font-semibold leading-tight text-slate-900">
                     {{ project ? 'Editar projeto' : 'Novo projeto' }}
                 </h2>
                 <Link
