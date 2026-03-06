@@ -144,12 +144,12 @@ Route::get('/', function () use ($resolveResponsiveImage) {
     );
 
     $bentoImages = collect([
-        'architecture' => ['src' => 'https://images.unsplash.com/photo-2JJ3wBHu4_0?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Arquitetura escalável'],
-        'speed' => ['src' => 'https://images.unsplash.com/photo-Ib2e4-Qy9mQ?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Velocidade e performance'],
-        'ai' => ['src' => 'https://images.unsplash.com/photo-zips8ILZd04?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Inteligência artificial'],
-        'design' => ['src' => 'https://images.unsplash.com/photo-qaedPly-Uro?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Design system'],
-        'mobile' => ['src' => 'https://images.unsplash.com/photo-BlWbfrQrI5k?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Mobile-first'],
-        'security' => ['src' => 'https://images.unsplash.com/photo-RMIsZlv8qv4?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Segurança e autenticação'],
+        'architecture' => ['src' => 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Arquitetura escalável'],
+        'speed' => ['src' => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Velocidade e performance'],
+        'ai' => ['src' => 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Inteligência artificial'],
+        'design' => ['src' => 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Design system'],
+        'mobile' => ['src' => 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Mobile-first'],
+        'security' => ['src' => 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=1200&q=80', 'alt' => 'Segurança e autenticação'],
     ]);
 
     if (Schema::hasTable('landing_bento_cards')) {
