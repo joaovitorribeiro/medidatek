@@ -57,7 +57,92 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200)->header('Content-Type', 'application/xml; charset=UTF-8');
 })->name('sitemap');
 
-Route::get('/', function () {
+$resolvePublicImageSrc = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix): ?string {
+    $imageUrl = $imageUrl ? trim($imageUrl) : null;
+    if (!$imageUrl) {
+        return null;
+    }
+
+    if (Str::startsWith($imageUrl, ['http://', 'https://'])) {
+        return $imageUrl;
+    }
+
+    if (Str::startsWith($imageUrl, ['/midia/', 'midia/'])) {
+        return '/'.ltrim($imageUrl, '/');
+    }
+
+    $normalized = ltrim($imageUrl, '/');
+    if (Str::startsWith($normalized, [$storagePrefix, 'storage/'.$storagePrefix])) {
+        return route($mediaRouteName, ['filename' => basename($normalized)], absolute: false);
+    }
+
+    return Storage::disk('public')->url($normalized);
+};
+
+$extractRelativeStoragePath = function (?string $imageUrl, string $storagePrefix): ?string {
+    $imageUrl = $imageUrl ? trim($imageUrl) : null;
+    if (!$imageUrl || Str::startsWith($imageUrl, ['http://', 'https://'])) {
+        return null;
+    }
+
+    $normalized = ltrim($imageUrl, '/');
+    if (Str::startsWith($normalized, 'storage/'.$storagePrefix)) {
+        $normalized = substr($normalized, strlen('storage/'));
+    } elseif (Str::startsWith($normalized, 'midia/')) {
+        $normalized = $storagePrefix.basename($normalized);
+    }
+
+    return Str::startsWith($normalized, $storagePrefix) ? $normalized : null;
+};
+
+$buildMobileVariantPath = function (string $relativePath): string {
+    $extension = pathinfo($relativePath, PATHINFO_EXTENSION);
+    $filename = pathinfo($relativePath, PATHINFO_FILENAME);
+    $directory = pathinfo($relativePath, PATHINFO_DIRNAME);
+    $directory = $directory === '.' ? '' : $directory.'/';
+
+    return $directory.$filename.'-sm'.($extension ? '.'.$extension : '');
+};
+
+$resolveResponsiveImage = function (?string $imageUrl, string $mediaRouteName, string $storagePrefix, string $sizes = '100vw') use ($resolvePublicImageSrc, $extractRelativeStoragePath, $buildMobileVariantPath): array {
+    $src = $resolvePublicImageSrc($imageUrl, $mediaRouteName, $storagePrefix);
+    if (!$src) {
+        return ['src' => null, 'srcset' => null, 'sizes' => null];
+    }
+
+    $relativePath = $extractRelativeStoragePath($imageUrl, $storagePrefix);
+    if (!$relativePath) {
+        return ['src' => $src, 'srcset' => null, 'sizes' => null];
+    }
+
+    $mobileVariant = $buildMobileVariantPath($relativePath);
+    if (!Storage::disk('public')->exists($mobileVariant)) {
+        return ['src' => $src, 'srcset' => null, 'sizes' => null];
+    }
+
+    $mobileSrc = route($mediaRouteName, ['filename' => basename($mobileVariant)], absolute: false);
+
+    return [
+        'src' => $src,
+        'srcset' => $mobileSrc.' 640w, '.$src.' 1200w',
+        'sizes' => $sizes,
+    ];
+};
+
+Route::get('/', function () use ($resolveResponsiveImage) {
+    $resolveBentoImage = fn (?string $imageUrl): array => $resolveResponsiveImage(
+        $imageUrl,
+        'media.landing.bento',
+        'landing/bento/',
+        '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 1200px',
+    );
+    $resolveProjectImage = fn (?string $imageUrl): array => $resolveResponsiveImage(
+        $imageUrl,
+        'media.projects',
+        'projects/',
+        '(max-width: 768px) 88vw, (max-width: 1280px) 420px, 420px',
+    );
+
     $bentoImages = collect([
         'architecture' => ['src' => 'https://images.unsplash.com/photo-2JJ3wBHu4_0?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Arquitetura escalável'],
         'speed' => ['src' => 'https://images.unsplash.com/photo-Ib2e4-Qy9mQ?q=80&w=1200&auto=format&fit=crop', 'alt' => 'Velocidade e performance'],
@@ -72,16 +157,18 @@ Route::get('/', function () {
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get(['key', 'image_url', 'alt'])
-            ->mapWithKeys(fn (LandingBentoCard $c) => [
-                $c->key => [
-                    'src' => Str::startsWith($c->image_url, ['http://', 'https://'])
-                        ? $c->image_url
-                        : (Str::startsWith($c->image_url, 'landing/bento/')
-                            ? route('media.landing.bento', ['filename' => basename($c->image_url)], absolute: false)
-                            : Storage::disk('public')->url($c->image_url)),
-                    'alt' => $c->alt,
-                ],
-            ]);
+            ->mapWithKeys(function (LandingBentoCard $c) use ($resolveBentoImage) {
+                $image = $resolveBentoImage($c->image_url);
+
+                return [
+                    $c->key => [
+                        'src' => $image['src'],
+                        'srcset' => $image['srcset'],
+                        'sizes' => $image['sizes'],
+                        'alt' => $c->alt,
+                    ],
+                ];
+            });
     }
 
     $proofLinks = collect();
@@ -92,21 +179,21 @@ Route::get('/', function () {
             ->orderByDesc('id')
             ->limit(12)
             ->get(['name', 'url', 'image_url', 'image_alt', 'tag', 'note'])
-            ->map(fn (Project $p) => [
-                'name' => $p->name,
-                'url' => $p->url,
-                'image_url' => $p->image_url,
-                'image_src' => $p->image_url
-                    ? (Str::startsWith($p->image_url, ['http://', 'https://'])
-                        ? $p->image_url
-                        : (Str::startsWith($p->image_url, 'projects/')
-                            ? route('media.projects', ['filename' => basename($p->image_url)], absolute: false)
-                            : Storage::disk('public')->url($p->image_url)))
-                    : null,
-                'image_alt' => $p->image_alt,
-                'tag' => $p->tag,
-                'note' => $p->note,
-                ])
+            ->map(function (Project $p) use ($resolveProjectImage) {
+                $image = $resolveProjectImage($p->image_url);
+
+                return [
+                    'name' => $p->name,
+                    'url' => $p->url,
+                    'image_url' => $p->image_url,
+                    'image_src' => $image['src'],
+                    'image_srcset' => $image['srcset'],
+                    'image_sizes' => $image['sizes'],
+                    'image_alt' => $p->image_alt,
+                    'tag' => $p->tag,
+                    'note' => $p->note,
+                ];
+            })
             ->values();
     }
 
@@ -127,11 +214,21 @@ $serveLandingBento = function (string $filename) {
     }
 
     $fullPath = Storage::disk('public')->path($relative);
-    $mime = Storage::disk('public')->mimeType($relative) ?: 'application/octet-stream';
+    $mime = Storage::disk('public')->mimeType($relative);
+    if (!$mime || $mime === 'application/octet-stream') {
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mime = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'application/octet-stream',
+        };
+    }
 
     return response()->file($fullPath, [
         'Content-Type' => $mime,
         'Cache-Control' => 'public, max-age=31536000, immutable',
+        'Content-Disposition' => 'inline; filename="'.$filename.'"',
     ]);
 };
 
@@ -149,11 +246,21 @@ $serveProjectImage = function (string $filename) {
     }
 
     $fullPath = Storage::disk('public')->path($relative);
-    $mime = Storage::disk('public')->mimeType($relative) ?: 'application/octet-stream';
+    $mime = Storage::disk('public')->mimeType($relative);
+    if (!$mime || $mime === 'application/octet-stream') {
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mime = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'application/octet-stream',
+        };
+    }
 
     return response()->file($fullPath, [
         'Content-Type' => $mime,
         'Cache-Control' => 'public, max-age=31536000, immutable',
+        'Content-Disposition' => 'inline; filename="'.$filename.'"',
     ]);
 };
 
