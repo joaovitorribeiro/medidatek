@@ -112,12 +112,12 @@ onBeforeUnmount(() => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                <h2 class="text-xl font-semibold leading-tight text-white">
                     {{ project ? 'Editar projeto' : 'Novo projeto' }}
                 </h2>
                 <Link
                     :href="route('admin.projects.index')"
-                    class="text-sm font-semibold text-gray-700 hover:text-gray-900"
+                    class="text-sm font-semibold text-gray-200 hover:text-white"
                 >
                     Voltar
                 </Link>

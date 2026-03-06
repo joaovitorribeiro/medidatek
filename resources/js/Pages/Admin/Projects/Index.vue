@@ -29,7 +29,10 @@ defineProps<{
 
 const deleteForm = useForm({});
 const page = usePage();
-const isAdmin = computed(() => Boolean((page.props as any)?.auth?.user?.is_admin));
+const canManageProjects = computed(() => {
+    const user = (page.props as any)?.auth?.user;
+    return Boolean(user?.is_admin || user?.is_staff);
+});
 
 function destroy(id: number) {
     deleteForm.delete(route('admin.projects.destroy', id));
@@ -42,14 +45,14 @@ function destroy(id: number) {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                <h2 class="text-xl font-semibold leading-tight text-white">
                     Projetos
                 </h2>
                 <div class="flex items-center gap-2">
                     <Link
-                        v-if="isAdmin"
+                        v-if="canManageProjects"
                         :href="route('admin.projects.create')"
-                        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                        class="rounded-lg bg-[#6C5DD3] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5A4BC6]"
                     >
                         Novo projeto
                     </Link>
@@ -138,7 +141,7 @@ function destroy(id: number) {
                                             </span>
                                         </td>
                                         <td class="px-3 py-2 text-right">
-                                            <div v-if="isAdmin" class="flex justify-end gap-3">
+                                            <div v-if="canManageProjects" class="flex justify-end gap-3">
                                                 <Link
                                                     :href="route('admin.projects.edit', row.id)"
                                                     class="text-sm font-semibold text-gray-700 hover:text-gray-900"
