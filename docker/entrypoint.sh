@@ -21,6 +21,10 @@ APP_NAME_EFFECTIVE="${APP_NAME:-MedidaTek}"
 APP_ENV_EFFECTIVE="${APP_ENV:-production}"
 APP_DEBUG_EFFECTIVE="${APP_DEBUG:-false}"
 APP_KEY_EFFECTIVE="${APP_KEY:-}"
+CACHE_STORE_EFFECTIVE="${CACHE_STORE:-redis}"
+QUEUE_CONNECTION_EFFECTIVE="${QUEUE_CONNECTION:-redis}"
+REDIS_URL_EFFECTIVE="${REDIS_URL:-}"
+REDIS_HOST_EFFECTIVE="${REDIS_HOST:-}"
 
 if [ -z "$APP_KEY_EFFECTIVE" ]; then
   if [ "$APP_ENV_EFFECTIVE" = "production" ]; then
@@ -28,6 +32,17 @@ if [ -z "$APP_KEY_EFFECTIVE" ]; then
     exit 1
   fi
   APP_KEY_EFFECTIVE="$(php -r 'echo "base64:".base64_encode(random_bytes(32));')"
+fi
+
+if [ "$APP_ENV_EFFECTIVE" = "production" ]; then
+  if [ ! -f /app/public/build/manifest.json ] && [ ! -f /app/public/hot ]; then
+    echo "Vite assets missing: /app/public/build/manifest.json (rebuild image with Vite build enabled)." >&2
+    exit 1
+  fi
+  if { [ "$CACHE_STORE_EFFECTIVE" = "redis" ] || [ "$QUEUE_CONNECTION_EFFECTIVE" = "redis" ]; } && [ -z "$REDIS_URL_EFFECTIVE" ] && [ -z "$REDIS_HOST_EFFECTIVE" ]; then
+    echo "Redis is required (set REDIS_URL or REDIS_HOST) when CACHE_STORE/QUEUE_CONNECTION use redis." >&2
+    exit 1
+  fi
 fi
 
 cat > /app/.env <<EOF
@@ -54,7 +69,7 @@ SESSION_ENCRYPT=${SESSION_ENCRYPT:-false}
 CACHE_STORE=${CACHE_STORE:-redis}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-redis}
 
-REDIS_CLIENT=${REDIS_CLIENT:-phpredis}
+REDIS_CLIENT=${REDIS_CLIENT:-predis}
 REDIS_URL=${REDIS_URL:-}
 REDIS_HOST=${REDIS_HOST:-}
 REDIS_PORT=${REDIS_PORT:-6379}
@@ -66,42 +81,34 @@ EOF
 
 if [ "${WAIT_FOR_REDIS:-1}" = "1" ]; then
   php -r '
-    if (!class_exists("Redis")) {
-      exit(0);
-    }
     $url = getenv("REDIS_URL") ?: "";
     $host = getenv("REDIS_HOST") ?: "";
     $port = (int) (getenv("REDIS_PORT") ?: 6379);
-    $user = getenv("REDIS_USERNAME");
-    $pass = getenv("REDIS_PASSWORD");
+    $scheme = "tcp";
+
     if ($url !== "") {
       $parts = parse_url($url);
       if (is_array($parts)) {
+        if (!empty($parts["scheme"]) && in_array($parts["scheme"], ["rediss", "tls"], true)) {
+          $scheme = "tls";
+        }
         if (!empty($parts["host"])) $host = $parts["host"];
         if (!empty($parts["port"])) $port = (int) $parts["port"];
-        if (array_key_exists("user", $parts)) $user = $parts["user"];
-        if (array_key_exists("pass", $parts)) $pass = $parts["pass"];
       }
     }
-    if ($host === "") {
-      $host = "redis";
-    }
+
+    if ($host === "") $host = "redis";
+
     $tries = 60;
     while ($tries-- > 0) {
-      try {
-        $r = new Redis();
-        $r->connect($host, $port, 1.5);
-        if ($user !== false && $user !== "" && $pass !== false && $pass !== "") {
-          $r->auth([$user, $pass]);
-        } elseif ($pass !== false && $pass !== "") {
-          $r->auth($pass);
-        }
-        $r->ping();
+      $fp = @stream_socket_client("{$scheme}://{$host}:{$port}", $errno, $errstr, 1.5);
+      if ($fp) {
+        fclose($fp);
         exit(0);
-      } catch (Throwable $e) {
-        usleep(500000);
       }
+      usleep(500000);
     }
+
     fwrite(STDERR, "Redis not ready\n");
     exit(1);
   ';

@@ -13,16 +13,14 @@ COPY resources ./resources
 COPY public ./public
 COPY vite.config.js tsconfig.json postcss.config.js tailwind.config.js ./
 COPY --from=composer-build /app/vendor/tightenco/ziggy ./vendor/tightenco/ziggy
-RUN npx vite build
+RUN npx vite build \
+  && test -f /app/public/build/manifest.json
 
 FROM php:8.3-apache-bookworm AS app
 WORKDIR /app
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    autoconf \
-    g++ \
-    make \
     libicu-dev \
     libzip-dev \
     libpng-dev \
@@ -40,8 +38,6 @@ RUN apt-get update \
     pdo \
     pdo_mysql \
     zip \
-  && pecl install redis \
-  && docker-php-ext-enable redis \
   && a2enmod rewrite headers expires \
   && rm -rf /var/lib/apt/lists/*
 

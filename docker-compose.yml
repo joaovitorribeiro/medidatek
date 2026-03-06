@@ -17,12 +17,25 @@ services:
       timeout: 5s
       retries: 30
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8080:80"
@@ -39,9 +52,11 @@ services:
       DB_DATABASE: ${MYSQL_DATABASE:-medidatek}
       DB_USERNAME: ${MYSQL_USER:-medidatek}
       DB_PASSWORD: ${MYSQL_PASSWORD:-medidatek}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
       SESSION_DRIVER: file
-      CACHE_STORE: database
-      QUEUE_CONNECTION: database
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
       RUN_MIGRATIONS: "1"
       RUN_OPTIMIZE: "0"
     volumes:
@@ -53,6 +68,8 @@ services:
       dockerfile: Dockerfile
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       app:
         condition: service_started
@@ -69,9 +86,11 @@ services:
       DB_DATABASE: ${MYSQL_DATABASE:-medidatek}
       DB_USERNAME: ${MYSQL_USER:-medidatek}
       DB_PASSWORD: ${MYSQL_PASSWORD:-medidatek}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
       SESSION_DRIVER: file
-      CACHE_STORE: database
-      QUEUE_CONNECTION: database
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
       RUN_MIGRATIONS: "0"
       RUN_OPTIMIZE: "0"
     volumes:
@@ -81,3 +100,4 @@ services:
 volumes:
   app_storage:
   mysql_data:
+  redis_data:
