@@ -733,8 +733,8 @@ function submit() {
                     </div>
 
                     <div class="animate-on-scroll bento-card md:col-span-2 group relative overflow-hidden rounded-[2rem] bg-zinc-900/50 ring-1 ring-white/10 hover:ring-white/20 transition-all">
-                        <div class="absolute inset-0 z-0 bg-gradient-to-r from-zinc-900 to-transparent z-10"></div>
-                        <img :src="bentoImage('mobile').src" :srcset="desktopImageSrcset(bentoImage('mobile').srcset)" :sizes="desktopImageSizes(bentoImage('mobile').sizes)" :alt="bentoImage('mobile').alt" class="futuristic-image absolute right-0 top-0 h-full w-2/3 object-cover opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" :loading="infraImageLoading(4)" :fetchpriority="infraImageFetchPriority(4)" decoding="async" />
+                        <div class="absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/35 to-black/10 md:bg-gradient-to-r md:from-zinc-900 md:via-zinc-900/55 md:to-transparent"></div>
+                        <img :src="bentoImage('mobile').src" :srcset="desktopImageSrcset(bentoImage('mobile').srcset)" :sizes="desktopImageSizes(bentoImage('mobile').sizes)" :alt="bentoImage('mobile').alt" class="futuristic-image absolute inset-0 h-full w-full object-cover object-center opacity-65 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 md:left-auto md:right-0 md:w-2/3" :loading="infraImageLoading(4)" :fetchpriority="infraImageFetchPriority(4)" decoding="async" />
                         
                         <div class="relative z-20 h-full flex flex-col justify-center p-8">
                             <h3 class="text-2xl font-medium text-white">Mobile-First Real</h3>
