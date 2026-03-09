@@ -461,10 +461,10 @@ function submit() {
                     Disponível para novos projetos
                 </div>
                 
-                <h1 class="animate-on-scroll delay-200 mt-8 max-w-4xl text-5xl font-medium tracking-tight sm:text-7xl lg:text-8xl leading-[0.9]">
-                    <span class="hero-title-gradient hero-title-soft">Escala não é Sorte</span>
-                    <br />
-                    <span class="hero-title-gradient hero-title-strong">
+                <h1 class="animate-on-scroll delay-200 mt-8 max-w-4xl px-2 text-4xl font-medium tracking-tight sm:px-0 sm:text-7xl lg:text-8xl leading-[0.9]">
+                    <span class="hero-title-gradient hero-title-soft block sm:inline-block">Escala não é Sorte</span>
+                    <br class="hidden sm:block" />
+                    <span class="hero-title-gradient hero-title-strong block sm:inline-block">
                         <span class="hero-title-strong-text">É Sistema.</span>
                     </span>
                 </h1>
